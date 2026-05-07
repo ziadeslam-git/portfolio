@@ -41,7 +41,7 @@ const About = () => {
               <div className="relative max-w-md mx-auto lg:mx-0">
                 <div className="relative aspect-[3/4] rounded-3xl overflow-hidden">
                   <img 
-                    src="/uploads/IMG-20260110-WA0020.jpg" 
+                    src={`${import.meta.env.BASE_URL}uploads/IMG-20260110-WA0020.jpg`}
                     alt="Ziad ELkholy - Backend Developer" 
                     className="w-full h-full object-cover object-top rounded-3xl shadow-2xl"
                   />

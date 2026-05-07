@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Github } from "lucide-react";
+import { BookOpen, ExternalLink, Github } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Projects = () => {
@@ -31,13 +32,14 @@ const Projects = () => {
     },
     {
       id: 3,
-      title: "E-Commerce Platform",
-      description: "Full-featured e-commerce platform with secure payment integration and inventory management",
-      image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&h=400&fit=crop",
-      tags: ["ASP.NET Core", "SQL Server", "React", "Stripe"],
+      title: "Smart Store E-Commerce",
+      description: "Full-stack ASP.NET Core MVC commerce system with admin operations, customer shopping, Identity, cart, wishlist, checkout, orders, reviews, Stripe sandbox payments, Cloudinary media, and AR/EN localization.",
+      image: `${import.meta.env.BASE_URL}uploads/smart-store-preview.png`,
+      tags: ["ASP.NET Core MVC", ".NET 10", "EF Core", "SQL Server", "Identity", "Stripe"],
       category: "fullstack",
-      liveUrl: "#",
-      githubUrl: "#"
+      liveUrl: "https://e-commerce-team-2.runasp.net/",
+      githubUrl: "https://github.com/ziadeslam-git/ECommerce_System",
+      detailsUrl: "/projects/smart-store"
     },
     {
       id: 4,
@@ -141,39 +143,79 @@ const Projects = () => {
                 >
                   <Card className="group overflow-hidden glass-card rounded-2xl border-white/10 hover:border-primary/30 transition-all duration-500 h-full">
                     <div className="relative overflow-hidden aspect-video">
-                      <img 
-                        src={project.image} 
-                        alt={project.title}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
+                      {project.liveUrl !== "#" ? (
+                        <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" aria-label={`Open ${project.title}`}>
+                          <img 
+                            src={project.image} 
+                            alt={project.title}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          />
+                        </a>
+                      ) : (
+                        <img 
+                          src={project.image} 
+                          alt={project.title}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                      )}
                       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent opacity-60"></div>
                       
                       <div className="absolute inset-0 bg-primary/20 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-4">
-                        <Button 
-                          size="sm" 
-                          className="bg-white/20 backdrop-blur-sm border border-white/30 text-white hover:bg-white/30 rounded-full"
-                          asChild
-                        >
-                          <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
-                            <ExternalLink className="w-4 h-4" />
-                          </a>
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          className="bg-white/20 backdrop-blur-sm border border-white/30 text-white hover:bg-white/30 rounded-full"
-                          asChild
-                        >
-                          <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
-                            <Github className="w-4 h-4" />
-                          </a>
-                        </Button>
+                        {project.liveUrl !== "#" && (
+                          <Button 
+                            size="sm" 
+                            className="bg-white/20 backdrop-blur-sm border border-white/30 text-white hover:bg-white/30 rounded-full"
+                            asChild
+                          >
+                            <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" aria-label={`Open live ${project.title}`}>
+                              <ExternalLink className="w-4 h-4" />
+                            </a>
+                          </Button>
+                        )}
+                        {project.githubUrl !== "#" && (
+                          <Button 
+                            size="sm" 
+                            className="bg-white/20 backdrop-blur-sm border border-white/30 text-white hover:bg-white/30 rounded-full"
+                            asChild
+                          >
+                            <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" aria-label={`Open ${project.title} source code`}>
+                              <Github className="w-4 h-4" />
+                            </a>
+                          </Button>
+                        )}
                       </div>
                     </div>
                     
                     <div className="p-6">
-                      <h3 className="text-lg font-bold text-white mb-2 group-hover:text-primary transition-colors">
-                        {project.title}
-                      </h3>
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <h3 className="text-lg font-bold">
+                          {project.liveUrl !== "#" ? (
+                            <a
+                              href={project.liveUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-white transition-colors hover:text-primary"
+                            >
+                              {project.title}
+                            </a>
+                          ) : (
+                            <span className="text-white transition-colors group-hover:text-primary">
+                              {project.title}
+                            </span>
+                          )}
+                        </h3>
+                        {project.githubUrl !== "#" && (
+                          <a
+                            href={project.githubUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label={`${project.title} GitHub repository`}
+                            className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 transition-all hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
+                          >
+                            <Github className="h-4 w-4" />
+                          </a>
+                        )}
+                      </div>
                       <p className="text-white/60 text-sm mb-4 line-clamp-2">
                         {project.description}
                       </p>
@@ -188,6 +230,18 @@ const Projects = () => {
                           </Badge>
                         ))}
                       </div>
+                      {project.detailsUrl && (
+                        <Button
+                          variant="outline"
+                          className="mt-5 w-full rounded-full border-white/15 text-white/75 hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
+                          asChild
+                        >
+                          <Link to={project.detailsUrl}>
+                            <BookOpen className="mr-2 h-4 w-4" />
+                            Project Details
+                          </Link>
+                        </Button>
+                      )}
                     </div>
                   </Card>
                 </motion.div>

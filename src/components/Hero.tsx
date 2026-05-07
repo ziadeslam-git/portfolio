@@ -18,9 +18,9 @@ const Hero = () => {
       
       <SocialSidebar />
       
-      <div className="relative z-10 container mx-auto px-6 sm:px-8 lg:px-12">
+      <div className="relative z-10 container mx-auto px-6 sm:px-8 lg:pl-28 lg:pr-12">
         <div className="min-h-screen pt-24 pb-16 items-center justify-start flex flex-row">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center w-full max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center w-full max-w-7xl mx-auto">
             {/* Left side - Main content */}
             <div className="order-2 lg:order-1 text-center lg:text-left space-y-6">
               <motion.p
@@ -78,12 +78,12 @@ const Hero = () => {
               className="order-1 lg:order-2 justify-center relative items-end lg:justify-center flex flex-col px-0">
               <div className="relative w-full max-w-md lg:max-w-lg mx-auto">
                 <FloatingTechIcons />
-                <div className="relative mx-auto w-[385px] h-[385px] sm:w-[485px] sm:h-[485px] lg:w-[570px] lg:h-[570px]">
+                <div className="relative mx-auto w-[330px] h-[330px] sm:w-[430px] sm:h-[430px] lg:w-[570px] lg:h-[570px]">
                   <div className="relative w-full h-full rounded-3xl overflow-hidden">
                     <img
                       alt="Ziad ELkholy - Backend Developer"
                       className="w-full h-full object-cover object-top shadow-2xl rounded-3xl" 
-                      src="/uploads/1af38daa-53c3-4e23-81e6-e7c043a22881.png" />
+                      src={`${import.meta.env.BASE_URL}uploads/1af38daa-53c3-4e23-81e6-e7c043a22881.png`} />
                     <div className="absolute bottom-0 left-0 right-0 h-[25%] bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none"></div>
                   </div>
                 </div>
