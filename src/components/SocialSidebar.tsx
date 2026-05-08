@@ -39,7 +39,7 @@ const SocialSidebar = () => {
   ];
 
   return (
-    <div className="fixed left-4 sm:left-6 lg:left-8 top-1/2 -translate-y-1/2 z-40 hidden sm:flex flex-col gap-3">
+    <div className="fixed left-6 sm:left-8 lg:left-12 top-1/2 -translate-y-1/2 z-40 hidden sm:flex flex-col gap-4 items-center">
       {socials.map((social, index) => (
         <a
           key={index}
@@ -57,7 +57,7 @@ const SocialSidebar = () => {
       ))}
       
       {/* Vertical line */}
-      <div className="w-px h-16 bg-gradient-to-b from-white/20 to-transparent mx-auto mt-2"></div>
+      <div className="w-[2px] h-32 bg-gradient-to-b from-white/20 via-white/10 to-transparent mt-4 rounded-full"></div>
     </div>
   );
 };

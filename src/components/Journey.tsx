@@ -30,7 +30,22 @@ const Journey = () => {
   ];
 
   return (
-    <section id="journey" className="py-24 lg:py-32 relative overflow-hidden bg-transparent">
+    <section id="journey" className="py-24 lg:py-32 relative overflow-hidden bg-black">
+      
+      {/* Layer 1: Background Layer with Ambient Lighting (Exactly like Hero) */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(20,20,30,1)_0%,rgba(0,0,0,1)_70%)] z-0"></div>
+      
+      {/* Ambient Orbs */}
+      <div className="absolute top-1/4 -left-1/4 w-[600px] h-[600px] bg-primary/15 rounded-full blur-[150px] pointer-events-none z-0"></div>
+      <div className="absolute bottom-1/4 -right-1/4 w-[600px] h-[600px] bg-purple-900/15 rounded-full blur-[150px] pointer-events-none z-0"></div>
+
+      {/* Layer 2: Big HTML Text Background (Exactly like Hero but with Journey text) */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center opacity-[0.04] pointer-events-none select-none z-0 overflow-hidden font-black uppercase tracking-tighter leading-[0.85]">
+        <h1 className="text-[18vw] text-white whitespace-nowrap">SOFTWARE</h1>
+        <h2 className="text-[18vw] text-transparent whitespace-nowrap" style={{ WebkitTextStroke: '3px white' }}>ENGINEERING</h2>
+        <h3 className="text-[18vw] text-white whitespace-nowrap">BACKEND</h3>
+      </div>
+
       <div className="container mx-auto px-6 sm:px-8 lg:px-12 relative z-10">
         <div className="max-w-7xl mx-auto">
           <motion.div
