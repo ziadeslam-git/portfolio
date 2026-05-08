@@ -1,7 +1,9 @@
+import Preloader from "@/components/Preloader";
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
 import About from "@/components/About";
 import Skills from "@/components/Skills";
+import Journey from "@/components/Journey";
 import Projects from "@/components/Projects";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
@@ -9,7 +11,7 @@ import { useEffect } from "react";
 
 const Index = () => {
   useEffect(() => {
-    document.title = "Ziad ELkholy - Backend Developer | .NET Specialist";
+    document.title = "Ziad ELkholy";
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute('content', 'Ziad ELkholy - Backend Developer specializing in ASP.NET Core, C#, and building scalable APIs.');
@@ -17,12 +19,14 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
+      <Preloader />
       <Navigation />
       <main>
         <Hero />
         <About />
         <Skills />
+        <Journey />
         <Projects />
         <Contact />
       </main>

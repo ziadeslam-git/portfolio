@@ -1,253 +1,261 @@
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { BookOpen, ExternalLink, Github } from "lucide-react";
-import { useState } from "react";
+import { CheckCircle2, Github, Globe, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
 
 const Projects = () => {
-  const [filter, setFilter] = useState("all");
+  const [filter, setFilter] = useState("important");
 
   const projects = [
     {
       id: 1,
-      title: "Dar Al Nashr Publishing House",
-      description: "Complete e-commerce platform for book sales and publishing house website with inventory management and online ordering",
-      image: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&h=400&fit=crop",
-      tags: ["ASP.NET Core", "SQL Server", "Entity Framework", "Bootstrap", "HTML/CSS", "JavaScript"],
-      category: "fullstack",
-      liveUrl: "#",
-      githubUrl: "#"
+      title: "AlAsma Admin (Publishing House)",
+      badge: "PUBLISHING PLATFORM",
+      features: [
+        "Complete e-commerce platform for book sales and inventory management.",
+        "Secure author dashboard for real-time sales and royalty tracking.",
+        "Transparent publishing status updates and financial reports."
+      ],
+      image: `${import.meta.env.BASE_URL}uploads/publishing-system.png`,
+      techStack: [
+        { name: "ASP.NET Core", color: "bg-primary" },
+        { name: "SQL Server", color: "bg-blue-500" },
+        { name: "Entity Framework", color: "bg-indigo-500" }
+      ],
+      liveUrl: "https://al-asma-admin.runasp.net/",
+      githubUrl: "https://github.com/ziadeslam-git/AlAsma.Admin",
+      detailsUrl: "#",
+      isImportant: true
     },
     {
       id: 2,
-      title: "Personal Portfolio Website",
-      description: "Modern, responsive portfolio website with dark theme, blue glow effects, and WhatsApp integration",
-      image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&h=400&fit=crop",
-      tags: ["React", "TypeScript", "Tailwind CSS", "Vite", "Framer Motion"],
-      category: "fullstack",
-      liveUrl: "#",
-      githubUrl: "#"
+      title: "Smart Store E-Commerce",
+      badge: "E-COMMERCE PLATFORM",
+      features: [
+        "Full-stack commerce system with admin operations and customer shopping.",
+        "Features include Identity, cart, wishlist, checkout, orders, reviews.",
+        "Supports AR/EN localization and Cloudinary media management."
+      ],
+      image: `${import.meta.env.BASE_URL}uploads/smart-store-preview.png`,
+      techStack: [
+        { name: "ASP.NET Core MVC", color: "bg-primary" },
+        { name: "EF Core", color: "bg-blue-500" },
+        { name: "Stripe", color: "bg-indigo-500" }
+      ],
+      liveUrl: "https://e-commerce-team-2.runasp.net/",
+      githubUrl: "https://github.com/ziadeslam-git/ECommerce_System",
+      detailsUrl: "/projects/smart-store",
+      isImportant: true
     },
     {
       id: 3,
-      title: "Smart Store E-Commerce",
-      description: "Full-stack ASP.NET Core MVC commerce system with admin operations, customer shopping, Identity, cart, wishlist, checkout, orders, reviews, Stripe sandbox payments, Cloudinary media, and AR/EN localization.",
-      image: `${import.meta.env.BASE_URL}uploads/smart-store-preview.png`,
-      tags: ["ASP.NET Core MVC", ".NET 10", "EF Core", "SQL Server", "Identity", "Stripe"],
-      category: "fullstack",
-      liveUrl: "https://e-commerce-team-2.runasp.net/",
-      githubUrl: "https://github.com/ziadeslam-git/ECommerce_System",
-      detailsUrl: "/projects/smart-store"
+      title: "Bank Management System",
+      badge: "FINANCIAL SERVICES",
+      features: [
+        "Account creation, deposits, withdrawals, and balance tracking.",
+        "Basic transaction validation and data consistency handling.",
+        "Focused on reliability, security, and structured data management."
+      ],
+      image: `${import.meta.env.BASE_URL}uploads/bank-system.png`,
+      techStack: [
+        { name: "C#", color: "bg-white" },
+        { name: ".NET Core", color: "bg-primary" },
+        { name: "SQL Server", color: "bg-blue-500" },
+        { name: "Redis", color: "bg-red-500" }
+      ],
+      liveUrl: "#",
+      githubUrl: "#",
+      detailsUrl: "#",
+      isImportant: true
     },
     {
       id: 4,
-      title: "Task Management API",
-      description: "RESTful API for task and project management with JWT authentication",
-      image: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=600&h=400&fit=crop",
-      tags: ["ASP.NET Core", "Entity Framework", "JWT"],
-      category: "backend",
+      title: "Cinema System",
+      badge: "ENTERTAINMENT SYSTEMS",
+      features: [
+        "Users can view available movies and book tickets.",
+        "Includes seat selection and showtime organization.",
+        "Designed to provide a smooth and user-friendly booking experience."
+      ],
+      image: `${import.meta.env.BASE_URL}uploads/cinema-system.png`,
+      techStack: [
+        { name: "C#", color: "bg-white" },
+        { name: "ASP.NET Web API", color: "bg-primary" },
+        { name: "MongoDB", color: "bg-green-500" }
+      ],
       liveUrl: "#",
-      githubUrl: "#"
+      githubUrl: "#",
+      detailsUrl: "#",
+      isImportant: false
     },
     {
       id: 5,
-      title: "Tech Company Website",
-      description: "Professional website with CMS backend and optimized performance",
-      image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=400&fit=crop",
-      tags: ["ASP.NET Core", "Entity Framework", "Bootstrap"],
-      category: "fullstack",
+      title: "Hospital & Clinics System",
+      badge: "HEALTHCARE SYSTEMS",
+      features: [
+        "Patient registration, appointment scheduling, and medical records.",
+        "Doctor management and treatment history across multiple clinics.",
+        "Designed to improve workflow and reduce manual errors."
+      ],
+      image: `${import.meta.env.BASE_URL}uploads/clinic-system.png`,
+      techStack: [
+        { name: "C#", color: "bg-white" },
+        { name: ".NET 8", color: "bg-primary" },
+        { name: "PostgreSQL", color: "bg-blue-400" }
+      ],
       liveUrl: "#",
-      githubUrl: "#"
-    },
-    {
-      id: 6,
-      title: "Content Management System",
-      description: "Custom CMS with comprehensive admin panel and user management",
-      image: "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=600&h=400&fit=crop",
-      tags: ["ASP.NET Core", "SQL Server", "Entity Framework"],
-      category: "backend",
-      liveUrl: "#",
-      githubUrl: "#"
-    },
+      githubUrl: "#",
+      detailsUrl: "#",
+      isImportant: false
+    }
   ];
 
-  const filters = [
-    { key: "all", label: "All Projects" },
-    { key: "backend", label: "Backend" },
-    { key: "fullstack", label: "Full Stack" }
-  ];
-
-  const filteredProjects = filter === "all" 
-    ? projects 
-    : projects.filter(project => project.category === filter);
+  const displayedProjects = filter === "important" 
+    ? projects.filter(p => p.isImportant)
+    : projects;
 
   return (
-    <section id="projects" className="py-24 lg:py-32 relative overflow-hidden bg-black">
-      <div className="absolute inset-0 bg-black"></div>
-
-      <div className="container mx-auto px-6 sm:px-8 lg:px-12 relative z-10">
+    <section id="projects" className="py-20 lg:py-28 relative overflow-hidden bg-transparent">
+      <div className="container mx-auto px-6 sm:px-8 relative z-10">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.5 }}
-            className="text-center mb-12 lg:mb-16"
+            className="mb-12 lg:mb-20 text-center"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/5 mb-6">
-              <span className="text-primary text-sm font-medium">My Work</span>
-            </div>
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
-              Latest <span className="text-primary">Projects</span>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-3">
+              My Projects
             </h2>
-            <p className="text-white/70 text-lg sm:text-xl max-w-3xl mx-auto mb-10">
-              A collection of projects showcasing my backend development skills
+            <p className="text-white/60 text-base sm:text-lg max-w-2xl mx-auto italic mb-8">
+              Real systems I built while working — real projects for real clients and businesses.
             </p>
-            
-            <div className="flex flex-wrap justify-center gap-3">
-              {filters.map((filterItem) => (
-                <Button
-                  key={filterItem.key}
-                  variant={filter === filterItem.key ? "default" : "outline"}
-                  onClick={() => setFilter(filterItem.key)}
-                  className={`rounded-full px-6 py-2 text-sm font-medium transition-all duration-300 ${
-                    filter === filterItem.key 
-                      ? 'bg-primary text-primary-foreground shadow-glow' 
-                      : 'border-white/20 text-white/70 hover:text-white hover:border-white/40'
-                  }`}
-                >
-                  {filterItem.label}
-                </Button>
-              ))}
+
+            {/* Filter Buttons */}
+            <div className="flex justify-center gap-4">
+              <Button
+                variant={filter === "important" ? "default" : "outline"}
+                onClick={() => setFilter("important")}
+                className={`rounded-full px-6 py-2 text-sm font-medium transition-all duration-300 ${
+                  filter === "important" 
+                    ? 'bg-primary text-primary-foreground shadow-glow border-transparent' 
+                    : 'bg-white/5 border-white/20 text-white hover:bg-white/10'
+                }`}
+              >
+                Important Projects
+              </Button>
+              <Button
+                variant={filter === "all" ? "default" : "outline"}
+                onClick={() => setFilter("all")}
+                className={`rounded-full px-6 py-2 text-sm font-medium transition-all duration-300 ${
+                  filter === "all" 
+                    ? 'bg-primary text-primary-foreground shadow-glow border-transparent' 
+                    : 'bg-white/5 border-white/20 text-white hover:bg-white/10'
+                }`}
+              >
+                All Projects
+              </Button>
             </div>
           </motion.div>
 
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={filter}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
-            >
-              {filteredProjects.map((project, index) => (
-                <motion.div
-                  key={project.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{ duration: 0.4, delay: index * 0.1 }}
-                >
-                  <Card className="group overflow-hidden glass-card rounded-2xl border-white/10 hover:border-primary/30 transition-all duration-500 h-full">
-                    <div className="relative overflow-hidden aspect-video">
-                      {project.liveUrl !== "#" ? (
-                        <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" aria-label={`Open ${project.title}`}>
-                          <img 
-                            src={project.image} 
-                            alt={project.title}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                          />
-                        </a>
-                      ) : (
+          <div className="space-y-16 lg:space-y-24">
+            <AnimatePresence mode="popLayout">
+              {displayedProjects.map((project, index) => {
+                const isEven = index % 2 === 0;
+                return (
+                  <motion.div
+                    key={project.id}
+                    layout
+                    initial={{ opacity: 0, y: 40 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.6 }}
+                    className={`flex flex-col ${isEven ? 'lg:flex-row' : 'lg:flex-row-reverse'} gap-8 lg:gap-12 items-center`}
+                  >
+                    {/* Image Section */}
+                    <div className="w-full lg:w-1/2">
+                      <div className="relative group rounded-2xl lg:rounded-3xl overflow-hidden glass-dark border border-white/5 transition-all duration-500 hover:border-primary/50 hover:shadow-neon aspect-video sm:aspect-[4/3] lg:aspect-square flex items-center justify-center">
                         <img 
                           src={project.image} 
                           alt={project.title}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         />
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent opacity-60"></div>
-                      
-                      <div className="absolute inset-0 bg-primary/20 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-4">
-                        {project.liveUrl !== "#" && (
-                          <Button 
-                            size="sm" 
-                            className="bg-white/20 backdrop-blur-sm border border-white/30 text-white hover:bg-white/30 rounded-full"
-                            asChild
-                          >
-                            <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" aria-label={`Open live ${project.title}`}>
-                              <ExternalLink className="w-4 h-4" />
-                            </a>
-                          </Button>
-                        )}
-                        {project.githubUrl !== "#" && (
-                          <Button 
-                            size="sm" 
-                            className="bg-white/20 backdrop-blur-sm border border-white/30 text-white hover:bg-white/30 rounded-full"
-                            asChild
-                          >
-                            <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" aria-label={`Open ${project.title} source code`}>
-                              <Github className="w-4 h-4" />
-                            </a>
-                          </Button>
-                        )}
+                        {/* No dark overlay! Keeping it 100% visible */}
                       </div>
                     </div>
-                    
-                    <div className="p-6">
-                      <div className="flex items-start justify-between gap-3 mb-2">
-                        <h3 className="text-lg font-bold">
-                          {project.liveUrl !== "#" ? (
-                            <a
-                              href={project.liveUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-white transition-colors hover:text-primary"
-                            >
-                              {project.title}
-                            </a>
-                          ) : (
-                            <span className="text-white transition-colors group-hover:text-primary">
-                              {project.title}
-                            </span>
-                          )}
-                        </h3>
-                        {project.githubUrl !== "#" && (
-                          <a
-                            href={project.githubUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label={`${project.title} GitHub repository`}
-                            className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 transition-all hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
-                          >
-                            <Github className="h-4 w-4" />
-                          </a>
-                        )}
+
+                    {/* Content Section */}
+                    <div className="w-full lg:w-1/2 flex flex-col justify-center">
+                      <div className="inline-flex px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-primary text-[10px] sm:text-xs font-bold tracking-widest uppercase mb-4 w-fit">
+                        {project.badge}
                       </div>
-                      <p className="text-white/60 text-sm mb-4 line-clamp-2">
-                        {project.description}
-                      </p>
                       
-                      <div className="flex flex-wrap gap-2">
-                        {project.tags.map((tag, tagIndex) => (
-                          <Badge 
-                            key={tagIndex}
-                            className="bg-white/5 text-white/70 border-white/10 hover:bg-primary/20 hover:text-primary hover:border-primary/30 transition-colors text-xs"
-                          >
-                            {tag}
-                          </Badge>
+                      <h3 className="text-2xl sm:text-3xl font-bold text-white mb-6">
+                        {project.title}
+                      </h3>
+
+                      <div className="space-y-4 mb-8">
+                        {project.features.map((feature, i) => (
+                          <div key={i} className="flex items-start gap-3">
+                            <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                            <p className="text-white/70 text-sm sm:text-base leading-relaxed">
+                              {feature}
+                            </p>
+                          </div>
                         ))}
                       </div>
-                      {project.detailsUrl && (
-                        <Button
-                          variant="outline"
-                          className="mt-5 w-full rounded-full border-white/15 text-white/75 hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
-                          asChild
-                        >
-                          <Link to={project.detailsUrl}>
-                            <BookOpen className="mr-2 h-4 w-4" />
-                            Project Details
-                          </Link>
-                        </Button>
-                      )}
+
+                      <div className="flex flex-wrap gap-2 mb-8">
+                        {project.techStack.map((tech, i) => (
+                          <div key={i} className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 hover:border-white/20 transition-colors">
+                            <span className={`w-1.5 h-1.5 rounded-full ${tech.color}`}></span>
+                            <span className="text-white/80 text-xs sm:text-sm font-medium">{tech.name}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-3">
+                        {project.githubUrl !== "#" && (
+                          <Button 
+                            variant="outline"
+                            className="bg-transparent border-white/20 text-white hover:bg-white/10 rounded-xl px-5 h-12 font-semibold"
+                            asChild
+                          >
+                            <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
+                              View Code
+                            </a>
+                          </Button>
+                        )}
+                        {project.liveUrl !== "#" && (
+                          <Button 
+                            variant="outline"
+                            className="bg-transparent border-primary/50 text-primary hover:bg-primary/10 rounded-xl px-5 h-12 font-semibold"
+                            asChild
+                          >
+                            <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
+                              Website
+                            </a>
+                          </Button>
+                        )}
+                        {project.detailsUrl !== "#" && (
+                          <Button 
+                            className="bg-primary hover:bg-primary-glow text-white rounded-xl px-6 h-12 font-bold shadow-glow"
+                            asChild
+                          >
+                            <Link to={project.detailsUrl}>
+                              Details
+                            </Link>
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                  </Card>
-                </motion.div>
-              ))}
-            </motion.div>
-          </AnimatePresence>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </section>
