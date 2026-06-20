@@ -3,13 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
   ArrowLeft,
-  Cloud,
-  Database,
+  GraduationCap,
+  Sparkles,
   ExternalLink,
   Github,
-  Layers,
-  ShieldCheck,
-  ShoppingCart,
+  MonitorPlay,
+  Palette,
+  BarChart,
 } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
@@ -18,70 +18,69 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const liveUrl = "https://e-commerce-team-2.runasp.net/";
-const githubUrl = "https://github.com/ziadeslam-git/ECommerce_System";
+const liveUrl = "https://edu-stream-digital-media-platform.vercel.app/";
+const githubUrl = "https://github.com/ziadeslam-git/Edu-Stream";
 
 const highlights = [
-  "Admin area for catalog, products, variants, orders, shipments, payments, discounts, reviews, and users.",
-  "Customer storefront with product browsing, cart, wishlist, checkout, order history, cancellation, and reviews.",
-  "Identity area for register/login, password reset, external auth hooks, profile editing, and address management.",
-  "Stock-aware product variants, coupon validation, payment/shipment states, and role-based access separation.",
+  "Integrated interactive learning environment focused on gamification and digital media skills.",
+  "Structured curriculum with 6 learning modules, pre-skill assessment, and instant quizzes.",
+  "Modern glassmorphism UI with WebGL shader backgrounds and GSAP animations.",
+  "Authentication, user progress tracking, and Dark/Light mode support.",
 ];
 
 const techStack = [
-  ".NET 10",
-  "ASP.NET Core MVC",
-  "Razor Views",
-  "Entity Framework Core 10",
-  "SQL Server",
-  "ASP.NET Core Identity",
-  "Stripe.net",
-  "Cloudinary",
-  "MailKit SMTP",
-  "Tailwind utility styling",
-  "ASP.NET Core Localization",
+  "React 18",
+  "TypeScript 5",
+  "Vite",
+  "Tailwind CSS 4",
+  "GSAP 3",
+  "Framer Motion",
+  "WebGL (GLSL)",
+  "Clerk Auth",
+  "Radix UI",
+  "shadcn/ui",
 ];
 
 const featureGroups = [
   {
-    icon: <Layers className="h-5 w-5" />,
-    title: "Area-Based Architecture",
-    body: "The codebase is separated into Admin, Customer, and Identity areas with controllers, ViewModels, repositories, and a Unit of Work layer.",
+    icon: <GraduationCap className="h-5 w-5" />,
+    title: "Educational Modules",
+    body: "6 sequential learning modules covering integrated skill axes with cognitive assessments and real-time evaluations.",
   },
   {
-    icon: <ShoppingCart className="h-5 w-5" />,
-    title: "Commerce Workflow",
-    body: "The customer flow covers product details, stock-aware variants, wishlist, cart, coupons, checkout, order placement, and post-purchase reviews.",
+    icon: <BarChart className="h-5 w-5" />,
+    title: "Progress Tracking",
+    body: "Live progress bar reflecting completion percentages and a pre-skill assessment of 40 questions across 8 dimensions.",
   },
   {
-    icon: <ShieldCheck className="h-5 w-5" />,
-    title: "Accounts And Roles",
-    body: "ASP.NET Core Identity powers authentication, profile data, address management, external login hooks, and role-based admin/customer separation.",
+    icon: <Palette className="h-5 w-5" />,
+    title: "Immersive Animations",
+    body: "Custom WebGL shader backgrounds, GSAP ScrollTrigger animations, and Framer Motion transitions for a premium visual experience.",
   },
   {
-    icon: <Cloud className="h-5 w-5" />,
-    title: "Real Integrations",
-    body: "Cloudinary handles product and profile media, Stripe sandbox supports card checkout experiments, and MailKit supports email flows.",
+    icon: <MonitorPlay className="h-5 w-5" />,
+    title: "Modern UI/UX",
+    body: "Glassmorphism design, mobile-first responsive layout, accessible Radix UI components, and seamless Dark/Light mode toggling.",
   },
   {
-    icon: <Database className="h-5 w-5" />,
-    title: "Domain Modeling",
-    body: "The model includes categories, products, variants, images, carts, orders, payments, shipments, discounts, reviews, addresses, and users.",
+    icon: <Sparkles className="h-5 w-5" />,
+    title: "Authentication & State",
+    body: "Integrated with Clerk for identity management, utilizing TanStack Query for asynchronous data, and Zod for robust form validation.",
   },
 ];
 
-const SmartStoreProject = () => {
+const EduStreamProject = () => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = "Smart Store E-Commerce | Project Details";
+    document.title = "Edu-Stream Digital Media Platform | Project Details";
 
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute(
         "content",
-        "Smart Store is a full-stack ASP.NET Core MVC e-commerce project with admin, customer, Identity, checkout, Stripe, Cloudinary, localization, and SQL Server."
+        "Edu-Stream is a React-based educational platform for digital media and gamification skills with WebGL animations and Clerk authentication."
       );
     }
 
@@ -161,19 +160,19 @@ const SmartStoreProject = () => {
           <div className="grid items-center gap-10 lg:grid-cols-[1fr_0.95fr]">
             <div>
               <div className="hero-elem mb-5 inline-flex rounded-full border border-primary/30 bg-primary/10 px-4 py-2 text-sm font-medium text-primary">
-                Full-Stack E-Commerce Case Study
+                Educational Platform Case Study
               </div>
               <h1 className="hero-elem mb-6 text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">
-                Smart Store <span className="text-primary">E-Commerce</span>
+                Edu-Stream <span className="text-primary">Digital Media</span>
               </h1>
               <p className="hero-elem max-w-3xl text-lg leading-8 text-white/70">
-                Smart Store is a full-stack ASP.NET Core MVC graduation project built around a real multi-area commerce workflow. It combines admin operations, customer shopping, Identity, catalog management, stock-aware variants, carts, wishlists, coupons, checkout, order tracking, review moderation, localization, media uploads, and responsive dashboards in one codebase.
+                Edu-Stream is a comprehensive digital learning environment designed to empower individuals with gamification and digital media skills. It features a structured curriculum, interactive quizzes, live progress tracking, and an immersive user experience powered by React, WebGL shaders, and GSAP animations.
               </p>
               <div className="hero-elem mt-8 flex flex-col gap-4 sm:flex-row">
                 <Button className="rounded-full bg-primary px-7 py-6 font-semibold text-primary-foreground shadow-[0_0_20px_rgba(124,58,237,0.4)] hover:shadow-[0_0_30px_rgba(124,58,237,0.6)] transition-all" asChild>
                   <a href={liveUrl} target="_blank" rel="noopener noreferrer">
                     <ExternalLink className="mr-2 h-4 w-4" />
-                    Open Live Store
+                    Open Live Platform
                   </a>
                 </Button>
                 <Button variant="outline" className="rounded-full border-white/20 px-7 py-6 font-semibold text-white hover:border-white/40 hover:bg-white/10" asChild>
@@ -187,8 +186,8 @@ const SmartStoreProject = () => {
 
             <Card className="hero-img overflow-hidden rounded-2xl border-white/10 bg-white/5 shadow-lg transform-gpu perspective-1000">
               <img
-                src={`${import.meta.env.BASE_URL}uploads/smart-store-preview.png`}
-                alt="Smart Store production homepage"
+                src={`${import.meta.env.BASE_URL}uploads/edu-stream.png`}
+                alt="Edu-Stream production homepage"
                 className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
               />
             </Card>
@@ -240,4 +239,4 @@ const SmartStoreProject = () => {
   );
 };
 
-export default SmartStoreProject;
+export default EduStreamProject;

@@ -1,209 +1,192 @@
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Mail, Phone, MapPin, Send, ArrowRight } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
+import { Mail, Linkedin, Github } from "lucide-react";
+import { MorphElement } from "@/components/MorphElement";
+
+interface TerminalLine {
+  id: string;
+  type: 'input' | 'output' | 'system' | 'error' | 'success';
+  content: string;
+}
 
 const Contact = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: ""
-  });
+  const [lines, setLines] = useState<TerminalLine[]>([
+    { id: '1', type: 'system', content: 'Connection established. Secure channel open.' },
+    { id: '2', type: 'system', content: 'Type your message and press ENTER to send. Type "help" for options.' }
+  ]);
+  const [input, setInput] = useState("");
+  const [mode, setMode] = useState<'command' | 'messaging'>('command');
+  const [messageData, setMessageData] = useState({ name: '', email: '', message: '' });
+  const [step, setStep] = useState<'name' | 'email' | 'message'>('name');
+  const bottomRef = useRef<HTMLDivElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const message = `*New Contact Form Submission*%0A%0A*Name:* ${formData.name}%0A*Email:* ${formData.email}%0A%0A*Message:*%0A${formData.message}`;
-    const whatsappLink = `https://wa.me/201040603279?text=${message}`;
-    
-    window.open(whatsappLink, '_blank');
-    
-    toast.success("Opening WhatsApp with your message!");
-    setFormData({ name: "", email: "", message: "" });
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [lines, input]);
+
+  const addLine = (type: TerminalLine['type'], content: string) => {
+    setLines(prev => [...prev, { id: Math.random().toString(36).substr(2, 9), type, content }]);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
-  };
-
-  const contactInfo = [
-    {
-      icon: <Mail className="w-5 h-5" />,
-      title: "Email",
-      value: "ziadeslam.53200@gmail.com",
-      link: "mailto:ziadeslam.53200@gmail.com"
-    },
-    {
-      icon: <Phone className="w-5 h-5" />,
-      title: "Phone",
-      value: "+20 104 060 3279",
-      link: "https://wa.me/201040603279"
-    },
-    {
-      icon: <MapPin className="w-5 h-5" />,
-      title: "Location",
-      value: "Cairo, Egypt",
-      link: "#"
+  const handleCommand = (cmd: string) => {
+    const trimmed = cmd.trim().toLowerCase();
+    
+    if (trimmed === 'clear') {
+      setLines([]);
+    } else if (trimmed === 'help') {
+      addLine('output', 'Available commands:');
+      addLine('output', '  contact   - Start message sequence');
+      addLine('output', '  social    - List social links');
+      addLine('output', '  clear     - Clear terminal');
+    } else if (trimmed === 'social') {
+      addLine('output', 'Email: ziadeslam.53200@gmail.com');
+      addLine('output', 'LinkedIn: Available upon request');
+      addLine('output', 'GitHub: github.com/ziadeslam-git');
+    } else if (trimmed === 'contact' || trimmed === 'contact ziad') {
+      setMode('messaging');
+      setStep('name');
+      addLine('system', 'Initiating contact sequence...');
+      addLine('output', 'Please enter your Name:');
+    } else if (trimmed !== '') {
+      addLine('error', `Command not found: ${trimmed}. Type "help" for options.`);
     }
-  ];
+  };
+
+  const handleMessaging = (val: string) => {
+    if (val.trim() === '') {
+      addLine('error', 'Input cannot be empty. Please try again.');
+      return;
+    }
+
+    if (step === 'name') {
+      setMessageData(prev => ({ ...prev, name: val }));
+      setStep('email');
+      addLine('output', 'Please enter your Email:');
+    } else if (step === 'email') {
+      if (!val.includes('@')) {
+        addLine('error', 'Invalid email format. Please try again:');
+        return;
+      }
+      setMessageData(prev => ({ ...prev, email: val }));
+      setStep('message');
+      addLine('output', 'Please enter your Message:');
+    } else if (step === 'message') {
+      const fullMessage = { ...messageData, message: val };
+      
+      addLine('system', 'Encrypting payload...');
+      
+      setTimeout(() => {
+        const text = `*New Contact Form Submission*%0A%0A*Name:* ${encodeURIComponent(fullMessage.name)}%0A*Email:* ${encodeURIComponent(fullMessage.email)}%0A%0A*Message:*%0A${encodeURIComponent(fullMessage.message)}`;
+        const whatsappLink = `https://wa.me/201040603279?text=${text}`;
+        
+        window.open(whatsappLink, '_blank');
+        toast.success("Opening WhatsApp with your message!");
+        
+        addLine('success', 'Payload transmitted successfully via secure channel (WhatsApp).');
+        setMode('command');
+        setMessageData({ name: '', email: '', message: '' });
+      }, 800);
+    }
+  };
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    addLine('input', `> ${input}`);
+    
+    if (mode === 'command') {
+      handleCommand(input);
+    } else {
+      handleMessaging(input);
+    }
+    
+    setInput("");
+  };
 
   return (
-    <section id="contact" className="py-24 lg:py-32 relative overflow-hidden bg-black">
-      <div className="absolute inset-0 bg-black"></div>
-
-      <div className="container mx-auto px-6 sm:px-8 lg:px-12 relative z-10">
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-12 lg:mb-16"
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/5 mb-6">
-              <span className="text-primary text-sm font-medium">Get In Touch</span>
-            </div>
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
-              <span className="text-primary">Contact</span> Me
+    <section id="contact" className="py-24 lg:py-32 relative bg-transparent z-10">
+      <div className="container mx-auto px-6 sm:px-8 relative z-20">
+        <div className="max-w-4xl mx-auto">
+          <MorphElement type="slide-up" delay={0.1} className="text-center mb-12">
+            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
+              Initialize <span className="text-primary">Connection</span>
             </h2>
-            <p className="text-white/70 text-lg sm:text-xl max-w-3xl mx-auto">
-              Have a project in mind? Let's work together to bring your ideas to life
-            </p>
-          </motion.div>
+            <p className="text-white/60">Use the terminal below to securely transmit a message.</p>
+          </MorphElement>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-            <motion.div
-              initial={{ opacity: 0, x: -40 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.5 }}
-            >
-              <Card className="p-6 lg:p-8 glass-card rounded-2xl border-white/10">
-                <h3 className="text-2xl font-bold text-white mb-6">Send a Message</h3>
-                
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div>
-                    <Label htmlFor="name" className="text-white/80 font-medium">Name</Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      placeholder="Your full name"
-                      className="mt-2 bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-primary focus:ring-primary/20 rounded-xl"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="email" className="text-white/80 font-medium">Email</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder="email@example.com"
-                      className="mt-2 bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-primary focus:ring-primary/20 rounded-xl"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="message" className="text-white/80 font-medium">Message</Label>
-                    <Textarea
-                      id="message"
-                      name="message"
-                      value={formData.message}
-                      onChange={handleChange}
-                      placeholder="Tell me about your project..."
-                      rows={5}
-                      className="mt-2 bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-primary focus:ring-primary/20 rounded-xl resize-none"
-                      required
-                    />
-                  </div>
-                  
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-primary hover:bg-primary-glow text-primary-foreground rounded-full py-6 text-base font-semibold transition-all duration-300 shadow-glow hover:shadow-neon group"
-                  >
-                    Send Message
-                    <Send className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </form>
-              </Card>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 40 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="space-y-6"
-            >
-              <div className="mb-8">
-                <h3 className="text-2xl font-bold text-white mb-4">Contact Information</h3>
-                <p className="text-white/60 leading-relaxed">
-                  Feel free to reach out through any of these channels. I'm always excited to discuss new projects and opportunities.
-                </p>
-              </div>
+          <MorphElement type="scale" delay={0.2}>
+            <div className="relative rounded-xl overflow-hidden border border-primary/30 bg-black/80 backdrop-blur-xl shadow-[0_0_50px_rgba(124,58,237,0.15)] font-mono text-sm sm:text-base">
               
-              <div className="space-y-4">
-                {contactInfo.map((info, index) => (
-                  <motion.a
-                    key={index}
-                    href={info.link}
-                    className="block"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
-                  >
-                    <Card className="p-5 glass-card rounded-xl border-white/10 hover:border-primary/30 transition-all duration-300 group cursor-pointer">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
-                          {info.icon}
-                        </div>
-                        <div>
-                          <h4 className="font-medium text-white/60 text-sm">{info.title}</h4>
-                          <p className="text-white group-hover:text-primary transition-colors">{info.value}</p>
-                        </div>
-                      </div>
-                    </Card>
-                  </motion.a>
+              {/* CRT Scanline Overlay */}
+              <div className="absolute inset-0 pointer-events-none z-10 opacity-10 mix-blend-overlay" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, #000 2px, #000 4px)' }}></div>
+              
+              {/* Terminal Header */}
+              <div className="bg-[#111] px-4 py-3 border-b border-primary/20 flex items-center gap-2 relative z-20">
+                <div className="w-3 h-3 rounded-full bg-red-500/80 shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div>
+                <div className="w-3 h-3 rounded-full bg-yellow-500/80 shadow-[0_0_10px_rgba(234,179,8,0.5)]"></div>
+                <div className="w-3 h-3 rounded-full bg-green-500/80 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
+                <div className="ml-4 text-white/40 text-xs tracking-widest uppercase">guest@ziad-sys: ~/contact</div>
+              </div>
+
+              {/* Terminal Body */}
+              <div className="p-6 h-[400px] overflow-y-auto custom-scrollbar flex flex-col relative z-20">
+                {lines.map((line) => (
+                  <div key={line.id} className="mb-2">
+                    {line.type === 'input' && <span className="text-white font-medium">{line.content}</span>}
+                    {line.type === 'output' && <span className="text-[#c084fc] drop-shadow-[0_0_5px_rgba(192,132,252,0.4)]">{line.content}</span>}
+                    {line.type === 'system' && <span className="text-gray-500 italic">{line.content}</span>}
+                    {line.type === 'error' && <span className="text-red-400 drop-shadow-[0_0_5px_rgba(248,113,113,0.4)]">{line.content}</span>}
+                    {line.type === 'success' && <span className="text-green-400 drop-shadow-[0_0_5px_rgba(74,222,128,0.4)]">{line.content}</span>}
+                  </div>
                 ))}
+                
+                <form onSubmit={onSubmit} className="mt-2 flex items-center flex-wrap">
+                  <span className="text-primary mr-2 font-bold drop-shadow-[0_0_5px_rgba(124,58,237,0.5)]">
+                    {mode === 'command' ? 'guest@ziad-sys:~$ ' : '> '}
+                  </span>
+                  <div className="relative flex-1 min-w-[200px] flex items-center">
+                    <input
+                      type="text"
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      className="w-full bg-transparent border-none outline-none text-white shadow-none focus:ring-0 p-0 z-10"
+                      autoFocus
+                      autoComplete="off"
+                      spellCheck="false"
+                    />
+                    {/* Blinking Cursor */}
+                    <span className="absolute text-white animate-[pulse_1s_ease-in-out_infinite] pointer-events-none" style={{ left: `${input.length}ch` }}>
+                      █
+                    </span>
+                  </div>
+                </form>
+                <div ref={bottomRef} />
               </div>
-              
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: 0.6 }}
-              >
-                <Card className="p-6 bg-gradient-to-r from-primary to-accent rounded-2xl border-0 mt-8">
-                  <h4 className="text-xl font-bold text-primary-foreground mb-2">Ready to start your project?</h4>
-                  <p className="text-primary-foreground/80 mb-4 text-sm">
-                    Let's turn your idea into a reality with clean code and modern architecture
-                  </p>
-                  <Button 
-                    onClick={() => window.open('https://wa.me/201040603279', '_blank')}
-                    className="bg-white/20 backdrop-blur-sm border border-white/30 text-white hover:bg-white/30 rounded-full group"
-                  >
-                    Get Started
-                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </Card>
-              </motion.div>
-            </motion.div>
-          </div>
+            </div>
+          </MorphElement>
+
+          {/* Quick Links Fallback */}
+          <MorphElement type="slide-up" delay={0.4}>
+            <div className="mt-12 flex flex-wrap justify-center gap-6 relative z-20">
+              <a href="https://wa.me/201040603279" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-white/60 hover:text-primary transition-colors">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
+                </svg>
+                <span>WhatsApp</span>
+              </a>
+              <a href="mailto:ziadeslam.53200@gmail.com" className="flex items-center gap-2 text-white/60 hover:text-primary transition-colors">
+                <Mail className="w-5 h-5" />
+                <span>Email</span>
+              </a>
+              <a href="https://github.com/ziadeslam-git" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-white/60 hover:text-primary transition-colors">
+                <Github className="w-5 h-5" />
+                <span>GitHub</span>
+              </a>
+              <a href="https://www.linkedin.com/in/ziad-elkholy-065933367/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-white/60 hover:text-primary transition-colors">
+                <Linkedin className="w-5 h-5" />
+                <span>LinkedIn</span>
+              </a>
+            </div>
+          </MorphElement>
         </div>
       </div>
     </section>
