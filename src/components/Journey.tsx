@@ -16,38 +16,66 @@ const Journey = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const textRef = useRef<HTMLParagraphElement>(null);
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const lineRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     if (!containerRef.current || prefersReducedMotion) return;
 
-    if (titleRef.current && textRef.current) {
-      const titleChars = titleRef.current.innerText.split("");
-      titleRef.current.innerText = "";
-      
-      titleChars.forEach(char => {
-        const span = document.createElement("span");
-        span.innerText = char;
-        span.style.opacity = "0";
-        titleRef.current?.appendChild(span);
-      });
+    const ctx = gsap.context(() => {
+      if (titleRef.current && textRef.current) {
+        const titleChars = titleRef.current.innerText.split("");
+        titleRef.current.innerText = "";
+        
+        titleChars.forEach(char => {
+          const span = document.createElement("span");
+          span.innerText = char;
+          span.style.opacity = "0";
+          titleRef.current?.appendChild(span);
+        });
 
-      gsap.to(titleRef.current.children, {
-        scrollTrigger: {
-          trigger: titleRef.current,
-          start: "top 80%",
-        },
-        opacity: 1,
-        stagger: 0.05,
-        ease: "power2.out"
-      });
-    }
+        gsap.to(titleRef.current.children, {
+          scrollTrigger: {
+            trigger: titleRef.current,
+            start: "top 80%",
+          },
+          opacity: 1,
+          stagger: 0.05,
+          ease: "power2.out"
+        });
+      }
 
-    return () => {
-      ScrollTrigger.getAll().forEach(t => {
-        if (t.trigger === titleRef.current) t.kill();
+      // Timeline line animation
+      if (lineRef.current && timelineRef.current) {
+        gsap.to(lineRef.current, {
+          scaleY: 1,
+          ease: "none",
+          scrollTrigger: {
+            trigger: timelineRef.current,
+            start: "top center",
+            end: "bottom center",
+            scrub: true
+          }
+        });
+      }
+
+      // Timeline dots animation
+      const dots = gsap.utils.toArray('.journey-timeline-dot');
+      dots.forEach((dot: any) => {
+        gsap.to(dot, {
+          backgroundColor: '#7c3aed',
+          boxShadow: '0 0 15px rgba(124, 58, 237, 0.8)',
+          scrollTrigger: {
+            trigger: dot,
+            start: "top center",
+            toggleActions: "play reverse play reverse"
+          }
+        });
       });
-    };
+    }, containerRef);
+
+    return () => ctx.revert();
   }, [prefersReducedMotion]);
 
   return (
@@ -71,8 +99,10 @@ const Journey = () => {
             </MorphElement>
           </div>
 
-          <div className="relative max-w-5xl mx-auto">
-            <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-white/10 -translate-x-1/2"></div>
+          <div ref={timelineRef} className="relative max-w-5xl mx-auto">
+            <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-white/10 -translate-x-1/2">
+              <div ref={lineRef} className="absolute top-0 left-0 w-full h-full bg-primary shadow-[0_0_15px_rgba(124,58,237,1)] origin-top scale-y-0" />
+            </div>
 
             <div className="space-y-16 md:space-y-24">
               {journeys.map((item, index) => {
@@ -81,7 +111,7 @@ const Journey = () => {
                   <div key={item.id} className={`relative flex flex-col md:flex-row items-center ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} justify-center w-full`}>
                     
                     <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 w-8 h-8 items-center justify-center z-10">
-                      <div className="w-3 h-3 rounded-full bg-primary shadow-[0_0_15px_rgba(124,58,237,0.8)]"></div>
+                      <div className="journey-timeline-dot w-3 h-3 rounded-full bg-white/20 transition-colors duration-300"></div>
                     </div>
 
                     <div className={`w-full md:w-1/2 ${isEven ? 'md:pr-12 lg:pr-16' : 'md:pl-12 lg:pl-16'}`}>

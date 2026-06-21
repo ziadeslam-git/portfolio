@@ -43,7 +43,7 @@ const SocialSidebar = () => {
   ];
 
   return (
-    <div className="fixed left-6 sm:left-8 lg:left-12 top-1/2 -translate-y-1/2 z-40 hidden sm:flex flex-col gap-4 items-center">
+    <div className="fixed left-6 sm:left-8 lg:left-12 top-1/2 -translate-y-1/2 z-40 hidden sm:flex flex-col gap-4 items-center pointer-events-auto">
       {socials.map((social, index) => (
         <a
           key={index}

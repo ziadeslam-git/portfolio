@@ -1,14 +1,61 @@
+import { useRef, useEffect } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Code2, Shield, LayoutTemplate, Database, PenTool } from "lucide-react";
 import { skillCategories } from "@/lib/data";
 import { MorphElement } from "@/components/MorphElement";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const iconMap: Record<string, any> = {
   Code2, Shield, LayoutTemplate, Database, PenTool
 };
 
 const Skills = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const lineRef = useRef<HTMLDivElement>(null);
+  const prefersReducedMotion = useReducedMotion();
+
+  useEffect(() => {
+    if (!containerRef.current || prefersReducedMotion) return;
+
+    const ctx = gsap.context(() => {
+      // Timeline line animation
+      if (lineRef.current && timelineRef.current) {
+        gsap.to(lineRef.current, {
+          scaleY: 1,
+          ease: "none",
+          scrollTrigger: {
+            trigger: timelineRef.current,
+            start: "top center",
+            end: "bottom center",
+            scrub: true
+          }
+        });
+      }
+
+      // Timeline dots animation
+      const dots = gsap.utils.toArray('.skills-timeline-dot');
+      dots.forEach((dot: any) => {
+        gsap.to(dot, {
+          backgroundColor: '#7c3aed',
+          boxShadow: '0 0 15px rgba(124, 58, 237, 0.8)',
+          scrollTrigger: {
+            trigger: dot,
+            start: "top center",
+            toggleActions: "play reverse play reverse"
+          }
+        });
+      });
+    }, containerRef);
+
+    return () => ctx.revert();
+  }, [prefersReducedMotion]);
+
   return (
-    <section id="skills" className="py-24 relative overflow-hidden bg-transparent z-10">
+    <section id="skills" ref={containerRef} className="py-24 relative overflow-hidden bg-transparent z-10">
       <div className="container mx-auto px-6 sm:px-8 lg:px-12 relative z-20 pointer-events-none">
         <div className="max-w-7xl mx-auto pointer-events-auto">
           <MorphElement type="slide-up" delay={0.1} className="mb-16 lg:mb-24 text-center sm:text-left flex flex-col sm:flex-row justify-between items-end gap-6">
@@ -26,9 +73,11 @@ const Skills = () => {
             </p>
           </MorphElement>
 
-          <div className="relative max-w-5xl mx-auto">
+          <div ref={timelineRef} className="relative max-w-5xl mx-auto">
             {/* The continuous vertical line */}
-            <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-white/10 -translate-x-1/2"></div>
+            <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-white/10 -translate-x-1/2 overflow-hidden">
+              <div ref={lineRef} className="absolute top-0 left-0 w-full h-full bg-primary shadow-[0_0_15px_rgba(124,58,237,1)] origin-top scale-y-0" />
+            </div>
 
             <div className="space-y-16 md:space-y-24">
               {skillCategories.map((category, index) => {
@@ -40,7 +89,7 @@ const Skills = () => {
                     
                     {/* The glowing dot on the timeline */}
                     <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 w-8 h-8 items-center justify-center z-10">
-                      <div className="w-3 h-3 rounded-full bg-primary shadow-[0_0_15px_rgba(124,58,237,0.8)]"></div>
+                      <div className="skills-timeline-dot w-3 h-3 rounded-full bg-white/20 transition-colors duration-300"></div>
                     </div>
 
                     <div className={`w-full md:w-1/2 ${isEven ? 'md:pr-12 lg:pr-16' : 'md:pl-12 lg:pl-16'}`}>
