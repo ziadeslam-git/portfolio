@@ -25,18 +25,23 @@ const Projects = () => {
     const ctx = gsap.context(() => {
       const cards = gsap.utils.toArray('.project-card-wrapper');
       
+      // Calculate spread based on screen size to replace the buggy CSS negative margins
+      const isMobile = window.innerWidth < 768;
+      
       gsap.fromTo(cards, 
         {
-          y: 300,
+          y: 400,
+          x: 0,
           scale: 0.5,
           opacity: 0,
-          rotationZ: (i: number) => (i - cards.length / 2) * 15 // Initial heavy fan
+          rotationZ: (i: number) => (i - (cards.length - 1) / 2) * 15 // Initial heavy fan
         },
         {
-          y: 0,
+          y: (i: number) => isMobile ? (i - (cards.length - 1) / 2) * 140 : 0, // Vertical spread on mobile
+          x: (i: number) => isMobile ? 0 : (i - (cards.length - 1) / 2) * 180, // Horizontal spread on desktop
           scale: 1,
           opacity: 1,
-          rotationZ: (i: number) => (i - cards.length / 2) * 4, // Softly fanned final
+          rotationZ: (i: number) => (i - (cards.length - 1) / 2) * (isMobile ? 3 : 5), // Softly fanned final
           stagger: 0.1,
           ease: "power3.out",
           duration: 1.2,
@@ -91,9 +96,10 @@ const Projects = () => {
             </div>
           </MorphElement>
 
-          <div ref={deckRef} className="flex flex-col md:flex-row justify-center items-center md:-space-x-32 lg:-space-x-48 perspective-[2000px] min-h-[600px] py-12">
+          {/* Absolute positioning container to prevent layout shifts */}
+          <div ref={deckRef} className="relative flex justify-center items-center perspective-[2000px] h-[800px] md:h-[600px] py-12">
             {filteredProjects.map((project, index) => (
-              <div key={project.id} className="project-card-wrapper mb-[-300px] md:mb-0 w-full max-w-[350px] md:w-[400px] h-[500px]" style={{ zIndex: index }}>
+              <div key={project.id} className="project-card-wrapper absolute w-[90%] max-w-[350px] md:w-[400px] h-[500px]" style={{ zIndex: index }}>
                 <div 
                   className="project-card relative w-full h-full group cursor-pointer transform-style-3d transition-transform duration-700 ease-out hover:!rotate-z-0 hover:-translate-y-16 hover:scale-105"
                   onClick={() => setActiveProject(project)}
@@ -143,15 +149,15 @@ const Projects = () => {
 
                   {/* Back Face */}
                   <div className="absolute inset-0 backface-hidden rotate-y-180 bg-[#0a0a0a] border border-primary/40 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(124,58,237,0.3)] flex flex-col">
-                    {/* Faded Background Image */}
+                    {/* Faded Background Image - Fixed opacity and gradient to make it visible */}
                     {project.imageName && (
                       <div className="absolute inset-0 z-0">
                         <img 
                           src={`${import.meta.env.BASE_URL}uploads/${project.imageName}`} 
                           alt={project.title}
-                          className="w-full h-full object-cover opacity-15 blur-[2px]"
+                          className="w-full h-full object-cover opacity-50 blur-[2px] mix-blend-lighten"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-[#0a0a0a]/90 to-[#0a0a0a]"></div>
+                        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/40 via-[#0a0a0a]/80 to-[#0a0a0a]"></div>
                       </div>
                     )}
                     
