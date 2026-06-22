@@ -98,40 +98,22 @@ const EduStreamProject = () => {
         "-=0.6"
       );
 
-      gsap.fromTo(".highlight-item",
+      tl.fromTo(".highlight-item",
         { x: -30, opacity: 0 },
-        { 
-          x: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: "power2.out",
-          scrollTrigger: {
-            trigger: ".highlights-container",
-            start: "top 80%",
-            toggleActions: "play none none reverse"
-          }
-        }
+        { x: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: "power2.out" },
+        "-=0.4"
       );
 
-      gsap.fromTo(".feature-card",
+      tl.fromTo(".feature-card",
         { y: 40, opacity: 0, scale: 0.95 },
-        { 
-          y: 0, opacity: 1, scale: 1, duration: 0.6, stagger: 0.1, ease: "back.out(1.2)",
-          scrollTrigger: {
-            trigger: ".features-container",
-            start: "top 80%",
-            toggleActions: "play none none reverse"
-          }
-        }
+        { y: 0, opacity: 1, scale: 1, duration: 0.6, stagger: 0.1, ease: "back.out(1.2)" },
+        "-=0.4"
       );
 
-      gsap.fromTo(".tech-badge",
+      tl.fromTo(".tech-badge",
         { scale: 0, opacity: 0 },
-        { 
-          scale: 1, opacity: 1, duration: 0.4, stagger: 0.05, ease: "back.out(2)",
-          scrollTrigger: {
-            trigger: ".tech-container",
-            start: "top 85%",
-            toggleActions: "play none none reverse"
-          }
-        }
+        { scale: 1, opacity: 1, duration: 0.4, stagger: 0.05, ease: "back.out(2)" },
+        "-=0.2"
       );
 
     }, containerRef);

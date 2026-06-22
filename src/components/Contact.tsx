@@ -1,105 +1,26 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
-import { Mail, Linkedin, Github } from "lucide-react";
+import { Mail, Linkedin, Github, Send } from "lucide-react";
 import { MorphElement } from "@/components/MorphElement";
-
-interface TerminalLine {
-  id: string;
-  type: 'input' | 'output' | 'system' | 'error' | 'success';
-  content: string;
-}
+import { Button } from "@/components/ui/button";
 
 const Contact = () => {
-  const [lines, setLines] = useState<TerminalLine[]>([
-    { id: '1', type: 'system', content: 'Connection established. Secure channel open.' },
-    { id: '2', type: 'system', content: 'Type your message and press ENTER to send. Type "help" for options.' }
-  ]);
-  const [input, setInput] = useState("");
-  const [mode, setMode] = useState<'command' | 'messaging'>('command');
-  const [messageData, setMessageData] = useState({ name: '', email: '', message: '' });
-  const [step, setStep] = useState<'name' | 'email' | 'message'>('name');
-  const bottomRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [lines, input]);
-
-  const addLine = (type: TerminalLine['type'], content: string) => {
-    setLines(prev => [...prev, { id: Math.random().toString(36).substr(2, 9), type, content }]);
-  };
-
-  const handleCommand = (cmd: string) => {
-    const trimmed = cmd.trim().toLowerCase();
-    
-    if (trimmed === 'clear') {
-      setLines([]);
-    } else if (trimmed === 'help') {
-      addLine('output', 'Available commands:');
-      addLine('output', '  contact   - Start message sequence');
-      addLine('output', '  social    - List social links');
-      addLine('output', '  clear     - Clear terminal');
-    } else if (trimmed === 'social') {
-      addLine('output', 'Email: ziadeslam.53200@gmail.com');
-      addLine('output', 'LinkedIn: Available upon request');
-      addLine('output', 'GitHub: github.com/ziadeslam-git');
-    } else if (trimmed === 'contact' || trimmed === 'contact ziad') {
-      setMode('messaging');
-      setStep('name');
-      addLine('system', 'Initiating contact sequence...');
-      addLine('output', 'Please enter your Name:');
-    } else if (trimmed !== '') {
-      addLine('error', `Command not found: ${trimmed}. Type "help" for options.`);
-    }
-  };
-
-  const handleMessaging = (val: string) => {
-    if (val.trim() === '') {
-      addLine('error', 'Input cannot be empty. Please try again.');
-      return;
-    }
-
-    if (step === 'name') {
-      setMessageData(prev => ({ ...prev, name: val }));
-      setStep('email');
-      addLine('output', 'Please enter your Email:');
-    } else if (step === 'email') {
-      if (!val.includes('@')) {
-        addLine('error', 'Invalid email format. Please try again:');
-        return;
-      }
-      setMessageData(prev => ({ ...prev, email: val }));
-      setStep('message');
-      addLine('output', 'Please enter your Message:');
-    } else if (step === 'message') {
-      const fullMessage = { ...messageData, message: val };
-      
-      addLine('system', 'Encrypting payload...');
-      
-      setTimeout(() => {
-        const text = `*New Contact Form Submission*%0A%0A*Name:* ${encodeURIComponent(fullMessage.name)}%0A*Email:* ${encodeURIComponent(fullMessage.email)}%0A%0A*Message:*%0A${encodeURIComponent(fullMessage.message)}`;
-        const whatsappLink = `https://wa.me/201040603279?text=${text}`;
-        
-        window.open(whatsappLink, '_blank');
-        toast.success("Opening WhatsApp with your message!");
-        
-        addLine('success', 'Payload transmitted successfully via secure channel (WhatsApp).');
-        setMode('command');
-        setMessageData({ name: '', email: '', message: '' });
-      }, 800);
-    }
-  };
+  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    addLine('input', `> ${input}`);
-    
-    if (mode === 'command') {
-      handleCommand(input);
-    } else {
-      handleMessaging(input);
+    if (!formData.name || !formData.email || !formData.message) {
+      toast.error("Please fill in all fields.");
+      return;
     }
+
+    const text = `*New Contact Form Submission*%0A%0A*Name:* ${encodeURIComponent(formData.name)}%0A*Email:* ${encodeURIComponent(formData.email)}%0A%0A*Message:*%0A${encodeURIComponent(formData.message)}`;
+    const whatsappLink = `https://wa.me/201040603279?text=${text}`;
     
-    setInput("");
+    window.open(whatsappLink, '_blank');
+    toast.success("Opening WhatsApp with your message!");
+    
+    setFormData({ name: '', email: '', message: '' });
   };
 
   return (
@@ -108,59 +29,60 @@ const Contact = () => {
         <div className="max-w-4xl mx-auto">
           <MorphElement type="slide-up" delay={0.1} className="text-center mb-12">
             <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-              Initialize <span className="text-primary">Connection</span>
+              Get in <span className="text-primary">Touch</span>
             </h2>
-            <p className="text-white/60">Use the terminal below to securely transmit a message.</p>
+            <p className="text-white/60 text-lg">Have a project in mind? Let's connect.</p>
           </MorphElement>
 
           <MorphElement type="scale" delay={0.2}>
-            <div className="relative rounded-xl overflow-hidden border border-primary/30 bg-black/80 backdrop-blur-xl shadow-[0_0_50px_rgba(124,58,237,0.15)] font-mono text-sm sm:text-base">
-              
-              {/* CRT Scanline Overlay */}
-              <div className="absolute inset-0 pointer-events-none z-10 opacity-10 mix-blend-overlay" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, #000 2px, #000 4px)' }}></div>
-              
-              {/* Terminal Header */}
-              <div className="bg-[#111] px-4 py-3 border-b border-primary/20 flex items-center gap-2 relative z-20">
-                <div className="w-3 h-3 rounded-full bg-red-500/80 shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div>
-                <div className="w-3 h-3 rounded-full bg-yellow-500/80 shadow-[0_0_10px_rgba(234,179,8,0.5)]"></div>
-                <div className="w-3 h-3 rounded-full bg-green-500/80 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
-                <div className="ml-4 text-white/40 text-xs tracking-widest uppercase">guest@ziad-sys: ~/contact</div>
-              </div>
-
-              {/* Terminal Body */}
-              <div className="p-6 h-[400px] overflow-y-auto custom-scrollbar flex flex-col relative z-20">
-                {lines.map((line) => (
-                  <div key={line.id} className="mb-2">
-                    {line.type === 'input' && <span className="text-white font-medium">{line.content}</span>}
-                    {line.type === 'output' && <span className="text-[#c084fc] drop-shadow-[0_0_5px_rgba(192,132,252,0.4)]">{line.content}</span>}
-                    {line.type === 'system' && <span className="text-gray-500 italic">{line.content}</span>}
-                    {line.type === 'error' && <span className="text-red-400 drop-shadow-[0_0_5px_rgba(248,113,113,0.4)]">{line.content}</span>}
-                    {line.type === 'success' && <span className="text-green-400 drop-shadow-[0_0_5px_rgba(74,222,128,0.4)]">{line.content}</span>}
-                  </div>
-                ))}
-                
-                <form onSubmit={onSubmit} className="mt-2 flex items-center flex-wrap">
-                  <span className="text-primary mr-2 font-bold drop-shadow-[0_0_5px_rgba(124,58,237,0.5)]">
-                    {mode === 'command' ? 'guest@ziad-sys:~$ ' : '> '}
-                  </span>
-                  <div className="relative flex-1 min-w-[200px] flex items-center">
+            <div className="relative rounded-2xl overflow-hidden border border-primary/30 bg-black/60 backdrop-blur-xl shadow-[0_0_50px_rgba(124,58,237,0.15)] p-8 sm:p-10 pointer-events-auto">
+              <form onSubmit={onSubmit} className="flex flex-col gap-6 relative z-30">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label htmlFor="name" className="text-sm font-medium text-white/80">Your Name</label>
                     <input
+                      id="name"
                       type="text"
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      className="w-full bg-transparent border-none outline-none text-white shadow-none focus:ring-0 p-0 z-10"
-                      autoFocus
-                      autoComplete="off"
-                      spellCheck="false"
+                      value={formData.name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                      className="w-full bg-white/5 border border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 py-3 text-white outline-none transition-all"
+                      placeholder="John Doe"
+                      required
                     />
-                    {/* Blinking Cursor */}
-                    <span className="absolute text-white animate-[pulse_1s_ease-in-out_infinite] pointer-events-none" style={{ left: `${input.length}ch` }}>
-                      █
-                    </span>
                   </div>
-                </form>
-                <div ref={bottomRef} />
-              </div>
+                  <div className="space-y-2">
+                    <label htmlFor="email" className="text-sm font-medium text-white/80">Your Email</label>
+                    <input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                      className="w-full bg-white/5 border border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 py-3 text-white outline-none transition-all"
+                      placeholder="john@example.com"
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="message" className="text-sm font-medium text-white/80">Your Message</label>
+                  <textarea
+                    id="message"
+                    value={formData.message}
+                    onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
+                    className="w-full bg-white/5 border border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 py-3 text-white outline-none transition-all min-h-[150px] resize-y custom-scrollbar"
+                    placeholder="Tell me about your project..."
+                    required
+                  ></textarea>
+                </div>
+                
+                <Button type="submit" className="w-full sm:w-auto self-start bg-primary hover:bg-primary/90 text-white rounded-full px-8 py-6 text-base font-semibold transition-all duration-300 shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.5)]">
+                  <span className="flex items-center gap-2">
+                    Send via WhatsApp
+                    <Send className="w-4 h-4 ml-2" />
+                  </span>
+                </Button>
+              </form>
             </div>
           </MorphElement>
 

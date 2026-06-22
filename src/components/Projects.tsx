@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { CheckCircle2, Github, ExternalLink, X, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,6 @@ const Projects = () => {
     const ctx = gsap.context(() => {
       const cards = gsap.utils.toArray('.project-card-wrapper');
       
-      // Calculate spread based on screen size to replace the buggy CSS negative margins
       const isMobile = window.innerWidth < 768;
       
       gsap.fromTo(cards, 
@@ -34,14 +34,14 @@ const Projects = () => {
           x: 0,
           scale: 0.5,
           opacity: 0,
-          rotationZ: (i: number) => (i - (cards.length - 1) / 2) * 15 // Initial heavy fan
+          rotationZ: (i: number) => (i - (cards.length - 1) / 2) * 15
         },
         {
-          y: (i: number) => isMobile ? (i - (cards.length - 1) / 2) * 140 : 0, // Vertical spread on mobile
-          x: (i: number) => isMobile ? 0 : (i - (cards.length - 1) / 2) * 180, // Horizontal spread on desktop
+          y: (i: number) => isMobile ? (i - (cards.length - 1) / 2) * 140 : 0,
+          x: (i: number) => isMobile ? 0 : (i - (cards.length - 1) / 2) * 180,
           scale: 1,
           opacity: 1,
-          rotationZ: (i: number) => (i - (cards.length - 1) / 2) * (isMobile ? 3 : 5), // Softly fanned final
+          rotationZ: (i: number) => (i - (cards.length - 1) / 2) * (isMobile ? 3 : 5),
           stagger: 0.1,
           ease: "power3.out",
           duration: 1.2,
@@ -96,7 +96,6 @@ const Projects = () => {
             </div>
           </MorphElement>
 
-          {/* Absolute positioning container to prevent layout shifts */}
           <div ref={deckRef} className="relative flex justify-center items-center perspective-[2000px] h-[800px] md:h-[600px] py-12">
             {filteredProjects.map((project, index) => (
               <div key={project.id} className="project-card-wrapper absolute w-[90%] max-w-[350px] md:w-[400px] h-[500px]" style={{ zIndex: index }}>
@@ -105,7 +104,6 @@ const Projects = () => {
                   onClick={() => setActiveProject(project)}
                 >
                   <div className="relative w-full h-full transform-style-3d transition-transform duration-1000 ease-out group-hover:rotate-y-180">
-                  {/* Front Face */}
                   <div className="absolute inset-0 backface-hidden bg-black/80 backdrop-blur-xl border border-white/20 hover:border-primary/50 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.8)] flex flex-col">
                     <div className="h-[220px] w-full bg-black/80 relative overflow-hidden">
                       {project.imageName ? (
@@ -147,9 +145,7 @@ const Projects = () => {
                     </div>
                   </div>
 
-                  {/* Back Face */}
                   <div className="absolute inset-0 backface-hidden rotate-y-180 bg-[#0a0a0a] border border-primary/40 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(124,58,237,0.3)] flex flex-col">
-                    {/* Faded Background Image - Fixed opacity and gradient to make it visible */}
                     {project.imageName && (
                       <div className="absolute inset-0 z-0">
                         <img 
@@ -213,8 +209,8 @@ const Projects = () => {
         </div>
       </div>
 
-      {/* Project Detail Overlay */}
-      {activeProject && (
+      {/* Project Detail Overlay via Portal to escape stacking context */}
+      {activeProject && createPortal(
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 pointer-events-auto">
           {/* Backdrop */}
           <div 
@@ -300,7 +296,7 @@ const Projects = () => {
 
           </div>
         </div>
-      )}
+      , document.body)}
     </section>
   );
 };
