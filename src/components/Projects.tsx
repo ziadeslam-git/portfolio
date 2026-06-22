@@ -11,30 +11,48 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 
 const Projects = () => {
-  const [filter, setFilter] = useState("important");
   const [activeProject, setActiveProject] = useState<typeof projects[0] | null>(null);
   
   // Carousel State
   const [activeIndex, setActiveIndex] = useState(0);
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const filteredProjects = projects.filter((p) => {
-    if (filter === "important") return p.isImportant;
-    return true;
-  });
+  // We want the most important projects to be central.
+  // Actually, we just sort them by importance so the best ones are first.
+  const displayProjects = useMemo(() => {
+    return [...projects].sort((a, b) => {
+      if (a.isImportant && !b.isImportant) return -1;
+      if (!a.isImportant && b.isImportant) return 1;
+      return 0;
+    });
+  }, []);
 
-  // Reset index when filter changes
+  // Prevent page scroll when using mouse wheel on carousel
   useEffect(() => {
-    setActiveIndex(0);
-  }, [filter]);
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleWheelPrevent = (e: WheelEvent) => {
+      e.preventDefault();
+      if (Math.abs(e.deltaX) > 20 || Math.abs(e.deltaY) > 20) {
+        if (e.deltaX > 0 || e.deltaY > 0) {
+          navigate(1);
+        } else {
+          navigate(-1);
+        }
+      }
+    };
+
+    container.addEventListener('wheel', handleWheelPrevent, { passive: false });
+    return () => container.removeEventListener('wheel', handleWheelPrevent);
+  }, [displayProjects.length]);
 
   // Drag Handlers
   const handlePointerDown = (e: React.PointerEvent) => {
     setIsDragging(true);
     setStartX(e.clientX);
-    // Remove pointer capture so mouse leave works easily
     (e.target as HTMLElement).releasePointerCapture(e.pointerId);
   };
 
@@ -45,10 +63,8 @@ const Projects = () => {
     // Threshold to swipe
     if (Math.abs(diffX) > 50) {
       if (diffX > 0) {
-        // Swipe right -> go to previous
         navigate(-1);
       } else {
-        // Swipe left -> go to next
         navigate(1);
       }
       setIsDragging(false);
@@ -59,20 +75,9 @@ const Projects = () => {
     setIsDragging(false);
   };
 
-  // Wheel Handler
-  const handleWheel = (e: React.WheelEvent) => {
-    if (Math.abs(e.deltaX) > 20 || Math.abs(e.deltaY) > 20) {
-      if (e.deltaX > 0 || e.deltaY > 0) {
-        navigate(1);
-      } else {
-        navigate(-1);
-      }
-    }
-  };
-
   const navigate = (direction: number) => {
     setActiveIndex((prev) => {
-      const total = filteredProjects.length;
+      const total = displayProjects.length;
       let next = prev + direction;
       if (next < 0) next = total - 1;
       if (next >= total) next = 0;
@@ -81,7 +86,7 @@ const Projects = () => {
   };
 
   const getOffset = (index: number) => {
-    const total = filteredProjects.length;
+    const total = displayProjects.length;
     let offset = index - activeIndex;
     
     // Wrap around for infinite loop
@@ -94,21 +99,6 @@ const Projects = () => {
     return offset;
   };
 
-  const getHoverBoost = (index: number) => {
-    if (hoveredIndex === null) return 0;
-    
-    const total = filteredProjects.length;
-    let diff = index - hoveredIndex;
-    
-    // Wrap around for hover proximity
-    if (diff > Math.floor(total / 2)) diff -= total;
-    else if (diff < -Math.floor(total / 2)) diff += total;
-    
-    if (Math.abs(diff) === 0) return 1;    // The hovered card itself
-    if (Math.abs(diff) === 1) return 0.5;  // Immediate neighbors
-    return 0; // Others unaffected
-  };
-
   return (
     <section id="projects" className="py-24 relative overflow-hidden bg-transparent z-10">
       <div className="container mx-auto px-6 sm:px-8 lg:px-12 relative z-20 pointer-events-none">
@@ -118,87 +108,51 @@ const Projects = () => {
               My <span className="text-primary">Projects</span>
             </h2>
             <p className="text-white/60 text-lg sm:text-xl max-w-2xl mx-auto mb-8">
-              Interactive 3D tiles. Swipe, scroll, or drag to explore. Hover to expand. Click for details.
+              Interactive 3D tiles. Swipe, scroll, or drag to explore. Click for details.
             </p>
-
-            <div className="flex justify-center gap-4">
-              <Button
-                variant={filter === "important" ? "default" : "outline"}
-                onClick={() => setFilter("important")}
-                className={`rounded-full px-8 py-6 text-sm font-bold tracking-wide uppercase transition-all duration-300 ${
-                  filter === "important" 
-                    ? 'bg-primary text-white shadow-[0_0_20px_rgba(124,58,237,0.4)] border-transparent' 
-                    : 'bg-white/5 border-white/20 text-white hover:bg-white/10'
-                }`}
-              >
-                Important
-              </Button>
-              <Button
-                variant={filter === "all" ? "default" : "outline"}
-                onClick={() => setFilter("all")}
-                className={`rounded-full px-8 py-6 text-sm font-bold tracking-wide uppercase transition-all duration-300 ${
-                  filter === "all" 
-                    ? 'bg-primary text-white shadow-[0_0_20px_rgba(124,58,237,0.4)] border-transparent' 
-                    : 'bg-white/5 border-white/20 text-white hover:bg-white/10'
-                }`}
-              >
-                All Projects
-              </Button>
-            </div>
           </MorphElement>
 
           {/* 3D Coverflow Container */}
           <div 
+            ref={containerRef}
             className="relative flex justify-center items-center perspective-[2000px] h-[600px] md:h-[600px] py-12 touch-none select-none"
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
             onPointerLeave={handlePointerUp}
-            onWheel={handleWheel}
           >
-            {filteredProjects.map((project, index) => {
+            {displayProjects.map((project, index) => {
               const offset = getOffset(index);
-              const hoverBoost = getHoverBoost(index);
               
               // Base 3D positioning
               const isMobile = window.innerWidth < 768;
-              const spacing = isMobile ? 100 : 200;
-              const zPush = isMobile ? 120 : 150;
+              const spacing = isMobile ? 140 : 280; // Widen the spread
+              const zPush = isMobile ? 120 : 180;
               
               const baseScale = 1 - Math.abs(offset) * 0.15;
               const baseZ = -Math.abs(offset) * zPush;
               const translateX = offset * spacing;
+              // Add pyramid effect: Side cards are pushed down
+              const translateY = Math.abs(offset) * 40; 
               const rotateY = -Math.sign(offset) * (isMobile ? 15 : 25);
               
-              // Apply MacOS Dock Hover Effects
-              const hoverScaleBoost = hoverBoost * 0.1;
-              const hoverZBoost = hoverBoost * 50;
-              
-              // Straighten rotation slightly if hovered
-              const finalRotateY = hoverBoost === 1 ? 0 : rotateY;
-              
-              const finalScale = baseScale + hoverScaleBoost;
-              const finalZ = baseZ + hoverZBoost;
-              
-              // Blur side cards, unless hovered
-              const blurAmount = Math.max(0, (Math.abs(offset) - hoverBoost * 1.5) * 3);
-              const opacity = Math.max(0, 1 - Math.abs(offset) * 0.4 + hoverBoost * 0.5);
+              // Blur side cards
+              const blurAmount = Math.max(0, (Math.abs(offset) - 0.5) * 2);
+              const opacity = Math.max(0, 1 - Math.abs(offset) * 0.3);
 
               // Sort order: center card should be on top
-              const zIndex = 100 - Math.abs(offset) + Math.floor(hoverBoost * 10);
+              const zIndex = 100 - Math.abs(offset);
 
               return (
                 <div 
                   key={project.id} 
-                  className="project-card-wrapper absolute w-[85%] max-w-[320px] md:w-[400px] h-[500px] transition-all duration-500 ease-out"
+                  className="project-card-wrapper absolute w-[85%] max-w-[320px] md:w-[400px] h-[500px] transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)]"
                   style={{ 
                     zIndex,
-                    transform: `translateX(${translateX}px) translateZ(${finalZ}px) rotateY(${finalRotateY}deg) scale(${finalScale})`,
+                    transform: `translateX(${translateX}px) translateY(${translateY}px) translateZ(${baseZ}px) rotateY(${rotateY}deg) scale(${baseScale})`,
                     filter: `blur(${blurAmount}px)`,
                     opacity: opacity
                   }}
-                  onMouseEnter={() => setHoveredIndex(index)}
-                  onMouseLeave={() => setHoveredIndex(null)}
                   onClick={() => {
                     if (offset === 0) {
                       setActiveProject(project);
@@ -208,16 +162,16 @@ const Projects = () => {
                   }}
                 >
                   <div 
-                    className={`project-card relative w-full h-full group cursor-pointer transform-style-3d transition-transform duration-700 ease-out hover:rotate-y-180`}
+                    className={`project-card relative w-full h-full group cursor-pointer transform-style-3d transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] hover:rotate-y-180`}
                   >
                     {/* Front Face */}
-                    <div className="absolute inset-0 backface-hidden bg-black/80 backdrop-blur-xl border border-white/20 group-hover:border-primary/50 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.8)] flex flex-col">
-                      <div className="h-[220px] w-full bg-black/80 relative overflow-hidden">
+                    <div className="absolute inset-0 backface-hidden bg-black/90 backdrop-blur-xl border border-white/20 group-hover:border-primary/50 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.8)] flex flex-col">
+                      <div className="h-[220px] w-full bg-black relative overflow-hidden">
                         {project.imageName ? (
                           <img 
                             src={`${import.meta.env.BASE_URL}uploads/${project.imageName}`} 
                             alt={project.title}
-                            className="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-700"
+                            className="w-full h-full object-cover transition-transform duration-700"
                             draggable={false}
                           />
                         ) : (
@@ -225,13 +179,13 @@ const Projects = () => {
                             <span className="text-white/20 font-bold text-4xl">{project.title.substring(0, 2)}</span>
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
                         <div className="absolute top-4 right-4 px-3 py-1 bg-black/60 backdrop-blur-md rounded-full border border-white/10">
                           <span className="text-xs font-bold text-primary uppercase">{project.badge}</span>
                         </div>
                         
                         {/* Highlight strictly on center active card */}
-                        {offset === 0 && hoverBoost === 1 && (
+                        {offset === 0 && (
                            <div className="absolute inset-0 bg-primary/20 animate-pulse pointer-events-none mix-blend-overlay"></div>
                         )}
                       </div>
@@ -269,7 +223,7 @@ const Projects = () => {
                           <img 
                             src={`${import.meta.env.BASE_URL}uploads/${project.imageName}`} 
                             alt={project.title}
-                            className="w-full h-full object-cover opacity-50 blur-[2px] mix-blend-lighten"
+                            className="w-full h-full object-cover opacity-30 mix-blend-lighten"
                             draggable={false}
                           />
                           <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/40 via-[#0a0a0a]/80 to-[#0a0a0a]"></div>
