@@ -158,14 +158,17 @@ const Projects = () => {
               // Sort order: center card should be on top
               const zIndex = 100 - Math.abs(offset);
 
+              // Stagger appearance based on distance from center
+              const staggerDelay = Math.abs(offset) * 0.2;
+
               return (
                 <div 
                   key={project.id} 
-                  className="project-card-wrapper absolute w-[85%] max-w-[320px] md:w-[400px] h-[500px] transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)]"
+                  className="project-card-wrapper absolute w-[85%] max-w-[360px] md:w-[450px] h-[500px] transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)]"
                   style={{ 
                     zIndex,
                     transform: `translateX(${translateX}px) translateY(${translateY}px) translateZ(${baseZ}px) rotateY(${rotateY}deg) scale(${baseScale})`,
-                    filter: `blur(${blurAmount}px)`,
+                    filter: blurAmount === 0 ? 'none' : `blur(${blurAmount}px)`,
                     opacity: opacity
                   }}
                   onMouseEnter={() => setHoveredIndex(index)}
@@ -178,121 +181,112 @@ const Projects = () => {
                     }
                   }}
                 >
-                  <div 
-                    className={`project-card relative w-full h-full group cursor-pointer transform-style-3d transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] hover:rotate-y-180`}
-                  >
-                    {/* Front Face */}
-                    <div className="absolute inset-0 backface-hidden bg-black/90 backdrop-blur-xl border border-white/20 group-hover:border-primary/50 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.8)] flex flex-col">
-                      <div className="h-[220px] w-full bg-black relative overflow-hidden">
-                        {project.imageName ? (
-                          <img 
-                            src={`${import.meta.env.BASE_URL}uploads/${project.imageName}`} 
-                            alt={project.title}
-                            className="w-full h-full object-cover transition-transform duration-700"
-                            draggable={false}
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-purple-900/20">
-                            <span className="text-white/20 font-bold text-4xl">{project.title.substring(0, 2)}</span>
+                  {/* Animation Wrapper for initial scroll appearance */}
+                  <MorphElement type="slide-up" delay={staggerDelay} className="w-full h-full">
+                    <div 
+                      className={`project-card relative w-full h-full group cursor-pointer transform-style-3d transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] hover:rotate-y-180`}
+                    >
+                      {/* Front Face */}
+                      <div className="absolute inset-0 backface-hidden bg-black/90 backdrop-blur-xl border border-white/20 group-hover:border-primary/50 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.8)] flex flex-col">
+                        <div className="h-[220px] w-full bg-black relative overflow-hidden">
+                          {project.imageName ? (
+                            <img 
+                              src={`${import.meta.env.BASE_URL}uploads/${project.imageName}`} 
+                              alt={project.title}
+                              className="w-full h-full object-cover transition-transform duration-700"
+                              draggable={false}
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-purple-900/20">
+                              <span className="text-white/20 font-bold text-4xl">{project.title.substring(0, 2)}</span>
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                          <div className="absolute top-4 right-4 px-3 py-1 bg-black/60 backdrop-blur-md rounded-full border border-white/10">
+                            <span className="text-xs font-bold text-primary uppercase">{project.badge}</span>
                           </div>
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                        <div className="absolute top-4 right-4 px-3 py-1 bg-black/60 backdrop-blur-md rounded-full border border-white/10">
-                          <span className="text-xs font-bold text-primary uppercase">{project.badge}</span>
+                          
+                          {/* Highlight strictly on center active card */}
+                          {offset === 0 && (
+                             <div className="absolute inset-0 bg-primary/20 animate-pulse pointer-events-none mix-blend-overlay"></div>
+                          )}
                         </div>
                         
-                        {/* Highlight strictly on center active card */}
-                        {offset === 0 && (
-                           <div className="absolute inset-0 bg-primary/20 animate-pulse pointer-events-none mix-blend-overlay"></div>
-                        )}
-                      </div>
-                      
-                      <div className="p-6 flex-1 flex flex-col justify-between relative z-10 bg-black/50">
-                        <div>
-                          <h3 className="text-2xl font-bold text-white mb-2">{project.title}</h3>
-                          <div className="flex flex-wrap gap-2 mt-4">
-                            {project.techStack.slice(0, 3).map((tech, i) => (
-                              <span key={i} className="px-2.5 py-1 bg-white/10 border border-white/10 rounded-md text-white/90 text-xs font-medium">
-                                {tech.name}
-                              </span>
-                            ))}
-                            {project.techStack.length > 3 && (
-                              <span className="px-2.5 py-1 bg-white/5 border border-white/10 rounded-md text-white/50 text-xs font-medium">
-                                +{project.techStack.length - 3}
-                              </span>
+                        <div className="p-6 flex-1 flex flex-col justify-between relative z-10 bg-black/50">
+                          <div>
+                            <h3 className="text-2xl font-bold text-white mb-2">{project.title}</h3>
+                            <div className="flex flex-wrap gap-2 mt-4">
+                              {project.techStack.slice(0, 3).map((tech, i) => (
+                                <span key={i} className="px-2.5 py-1 bg-white/10 border border-white/10 rounded-md text-white/90 text-xs font-medium">
+                                  {tech.name}
+                                </span>
+                              ))}
+                              {project.techStack.length > 3 && (
+                                <span className="px-2.5 py-1 bg-white/5 border border-white/10 rounded-md text-white/50 text-xs font-medium">
+                                  +{project.techStack.length - 3}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-primary text-sm font-semibold flex items-center mt-4">
+                            {offset === 0 ? (
+                               <>Hover to flip <ArrowRight className="w-4 h-4 ml-2" /></>
+                            ) : (
+                               <>Click to bring to center</>
                             )}
                           </div>
                         </div>
-                        <div className="text-primary text-sm font-semibold flex items-center mt-4">
-                          {offset === 0 ? (
-                             <>Hover to flip <ArrowRight className="w-4 h-4 ml-2" /></>
-                          ) : (
-                             <>Click to bring to center</>
-                          )}
+                      </div>
+
+                      {/* Back Face */}
+                      <div className="absolute inset-0 backface-hidden rotate-y-180 bg-[#0a0a0a] border border-primary/40 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(124,58,237,0.3)] flex flex-col">
+                        <div className="relative z-10 p-6 flex flex-col h-full">
+                          <h3 className="text-xl font-bold text-white mb-3 flex items-center justify-between">
+                            {project.title}
+                            <span className="text-xs text-primary/80 font-mono">DETAILS</span>
+                          </h3>
+                        
+                          <p className="text-white/70 text-sm leading-relaxed flex-1">
+                            {project.description || "Click to view full architectural details and feature breakdowns."}
+                          </p>
+                          
+                          <div className="mb-6">
+                            <h4 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-2">Full Stack</h4>
+                            <div className="flex flex-wrap gap-2">
+                              {project.techStack.map((tech, i) => (
+                                <span key={i} className="flex items-center gap-1.5 px-2 py-1 bg-white/10 border border-white/20 rounded-md text-white/90 text-[10px] font-medium">
+                                  <span className={`w-1.5 h-1.5 rounded-full ${tech.color}`}></span>
+                                  {tech.name}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-3 mt-auto relative z-20">
+                            <Button className="flex-1 bg-primary hover:bg-primary/90 text-white text-xs font-bold pointer-events-auto" onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveProject(project);
+                            }}>
+                              Full Details
+                            </Button>
+                            
+                            {project.githubUrl !== "#" && (
+                              <Button size="icon" variant="outline" className="bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-primary pointer-events-auto" asChild onClick={(e) => e.stopPropagation()}>
+                                <a href={project.githubUrl} target="_blank" rel="noopener noreferrer"><Github className="w-4 h-4" /></a>
+                              </Button>
+                            )}
+                            
+                            {project.liveUrl !== "#" && (
+                              <Button size="icon" variant="outline" className="bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-primary pointer-events-auto" asChild onClick={(e) => e.stopPropagation()}>
+                                <a href={project.liveUrl} target="_blank" rel="noopener noreferrer"><ExternalLink className="w-4 h-4" /></a>
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
-
-                    {/* Back Face */}
-                    <div className="absolute inset-0 backface-hidden rotate-y-180 bg-[#0a0a0a] border border-primary/40 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(124,58,237,0.3)] flex flex-col">
-                      {project.imageName && (
-                        <div className="absolute inset-0 z-0">
-                          <img 
-                            src={`${import.meta.env.BASE_URL}uploads/${project.imageName}`} 
-                            alt={project.title}
-                            className="w-full h-full object-cover opacity-30 mix-blend-lighten"
-                            draggable={false}
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/40 via-[#0a0a0a]/80 to-[#0a0a0a]"></div>
-                        </div>
-                      )}
-                      
-                      <div className="relative z-10 p-6 flex flex-col h-full">
-                        <h3 className="text-xl font-bold text-white mb-3 flex items-center justify-between">
-                        {project.title}
-                        <span className="text-xs text-primary/80 font-mono">BACKEND</span>
-                      </h3>
-                      
-                      <p className="text-white/70 text-sm leading-relaxed flex-1">
-                        {project.description || "Click to view full architectural details and feature breakdowns."}
-                      </p>
-                      
-                      <div className="mb-6">
-                        <h4 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-2">Full Stack</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {project.techStack.map((tech, i) => (
-                            <span key={i} className="flex items-center gap-1.5 px-2 py-1 bg-white/10 border border-white/20 rounded-md text-white/90 text-[10px] font-medium">
-                              <span className={`w-1.5 h-1.5 rounded-full ${tech.color}`}></span>
-                              {tech.name}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-3 mt-auto relative z-20">
-                        <Button className="flex-1 bg-primary hover:bg-primary/90 text-white text-xs font-bold pointer-events-auto" onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveProject(project);
-                        }}>
-                          Full Details
-                        </Button>
-                        
-                        {project.githubUrl !== "#" && (
-                          <Button size="icon" variant="outline" className="bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-primary pointer-events-auto" asChild onClick={(e) => e.stopPropagation()}>
-                            <a href={project.githubUrl} target="_blank" rel="noopener noreferrer"><Github className="w-4 h-4" /></a>
-                          </Button>
-                        )}
-                        
-                        {project.liveUrl !== "#" && (
-                          <Button size="icon" variant="outline" className="bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-primary pointer-events-auto" asChild onClick={(e) => e.stopPropagation()}>
-                            <a href={project.liveUrl} target="_blank" rel="noopener noreferrer"><ExternalLink className="w-4 h-4" /></a>
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                  </MorphElement>
                 </div>
-              </div>
               );
             })}
           </div>
