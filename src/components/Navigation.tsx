@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Menu, X, FileText, Download } from "lucide-react";
 import { useState, useEffect } from "react";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -74,18 +75,29 @@ const Navigation = () => {
 
             {/* CV Split Button */}
             <div className="flex items-center ml-2 border-l border-white/10 pl-2">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <button className="flex items-center gap-1.5 px-3 lg:px-4 py-2 rounded-l-full text-sm font-medium transition-all duration-300 text-primary bg-primary/10 hover:bg-primary/20">
+                    <FileText className="w-4 h-4" />
+                    CV
+                  </button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl w-[95vw] h-[85vh] p-2 bg-black/90 border-white/10 flex flex-col gap-0 z-[100000]">
+                  <DialogTitle className="text-white px-2 pt-2 pb-4">Ziad ElKholy - CV</DialogTitle>
+                  <DialogDescription className="sr-only">Viewing Ziad's CV</DialogDescription>
+                  <div className="flex-1 w-full bg-white rounded-md overflow-hidden">
+                    <iframe 
+                      src={`${import.meta.env.BASE_URL}uploads/Ziad_ELkholy_CV.pdf#toolbar=0`} 
+                      className="w-full h-full border-none"
+                      title="Ziad ElKholy CV"
+                    />
+                  </div>
+                </DialogContent>
+              </Dialog>
+
               <a 
                 href={`${import.meta.env.BASE_URL}uploads/Ziad_ELkholy_CV.pdf`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-3 lg:px-4 py-2 rounded-l-full text-sm font-medium transition-all duration-300 text-primary bg-primary/10 hover:bg-primary/20"
-              >
-                <FileText className="w-4 h-4" />
-                CV
-              </a>
-              <a 
-                href={`${import.meta.env.BASE_URL}uploads/Ziad_ELkholy_CV.pdf`}
-                download
+                download="Ziad_ELkholy_CV.pdf"
                 className="flex items-center justify-center px-3 py-2 rounded-r-full transition-all duration-300 text-primary bg-primary/10 hover:bg-primary/20 border-l border-primary/20"
                 title="Download CV"
               >
@@ -126,18 +138,29 @@ const Navigation = () => {
             
             {/* Mobile CV Button */}
             <div className="px-4 py-3 flex gap-2">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 text-primary bg-primary/10 hover:bg-primary/20">
+                    <FileText className="w-4 h-4" />
+                    View CV
+                  </button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl w-[95vw] h-[85vh] p-2 bg-black/90 border-white/10 flex flex-col gap-0 z-[100000]">
+                  <DialogTitle className="text-white px-2 pt-2 pb-4">Ziad ElKholy - CV</DialogTitle>
+                  <DialogDescription className="sr-only">Viewing Ziad's CV</DialogDescription>
+                  <div className="flex-1 w-full bg-white rounded-md overflow-hidden">
+                    <iframe 
+                      src={`${import.meta.env.BASE_URL}uploads/Ziad_ELkholy_CV.pdf#toolbar=0`} 
+                      className="w-full h-full border-none"
+                      title="Ziad ElKholy CV"
+                    />
+                  </div>
+                </DialogContent>
+              </Dialog>
+
               <a 
                 href={`${import.meta.env.BASE_URL}uploads/Ziad_ELkholy_CV.pdf`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 text-primary bg-primary/10 hover:bg-primary/20"
-              >
-                <FileText className="w-4 h-4" />
-                View CV
-              </a>
-              <a 
-                href={`${import.meta.env.BASE_URL}uploads/Ziad_ELkholy_CV.pdf`}
-                download
+                download="Ziad_ELkholy_CV.pdf"
                 className="flex items-center justify-center px-4 py-2 rounded-full transition-all duration-300 text-primary bg-primary/10 hover:bg-primary/20"
                 title="Download CV"
               >

@@ -1,20 +1,3 @@
-import { useEffect, useRef } from 'react';
-import gsap from 'gsap';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, MeshDistortMaterial, Environment } from '@react-three/drei';
-import * as THREE from 'three';
-
-interface BootSequenceProps {
-  onComplete: () => void;
-}
-
-const zPoints = [
-  [-4, 4, 0], [-1.33, 4, 0], [1.33, 4, 0], [4, 4, 0], // Top
-  [2, 1.33, 0], [0, -1.33, 0], [-2, -4, 0], // Diagonal (adjusted to connect smoothly)
-  [-4, -6.66, 0], [-1.33, -6.66, 0], [1.33, -6.66, 0], [4, -6.66, 0] // Bottom
-];
-
 import { useEffect, useRef, useMemo } from 'react';
 import gsap from 'gsap';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
@@ -70,7 +53,9 @@ const BootParticleNetwork = () => {
     }));
   }, []);
 
-  const lineGeometry = useMemo(() => new THREE.BufferGeometry(), []);
+  const maxLines = (particleCount * (particleCount - 1)) / 2;
+  const linePositions = useMemo(() => new Float32Array(maxLines * 6), [maxLines]);
+  const lineColors = useMemo(() => new Float32Array(maxLines * 6), [maxLines]);
   const positionArray = useMemo(() => new Float32Array(particleCount * 3), []);
 
   useEffect(() => {
@@ -122,8 +107,7 @@ const BootParticleNetwork = () => {
     pointsRef.current.geometry.attributes.position.needsUpdate = true;
 
     // Connect close points
-    const linePositions = [];
-    const lineOpacities = [];
+    let lineCount = 0;
 
     for (let i = 0; i < particleCount; i++) {
       for (let j = i + 1; j < particleCount; j++) {
@@ -133,24 +117,39 @@ const BootParticleNetwork = () => {
         const distSq = dx * dx + dy * dy + dz * dz;
 
         if (distSq < maxDistance * maxDistance) {
-          linePositions.push(
-            positionArray[i * 3], positionArray[i * 3 + 1], positionArray[i * 3 + 2],
-            positionArray[j * 3], positionArray[j * 3 + 1], positionArray[j * 3 + 2]
-          );
+          const idx = lineCount * 6;
+          linePositions[idx] = positionArray[i * 3];
+          linePositions[idx + 1] = positionArray[i * 3 + 1];
+          linePositions[idx + 2] = positionArray[i * 3 + 2];
+          
+          linePositions[idx + 3] = positionArray[j * 3];
+          linePositions[idx + 4] = positionArray[j * 3 + 1];
+          linePositions[idx + 5] = positionArray[j * 3 + 2];
+
           // Opacity fades out at max distance
           const alpha = 1.0 - Math.sqrt(distSq) / maxDistance;
           // When forming the Z, we can boost the opacity for a glowing effect
           const boost = particles[0].progress * 0.5;
-          lineOpacities.push(alpha + boost, alpha + boost);
+          const finalAlpha = Math.min(1.0, alpha + boost);
+          
+          // Pre-multiply alpha into color for additive blending
+          lineColors[idx] = 0.608 * finalAlpha;
+          lineColors[idx + 1] = 0.188 * finalAlpha;
+          lineColors[idx + 2] = 1.0 * finalAlpha;
+          
+          lineColors[idx + 3] = 0.608 * finalAlpha;
+          lineColors[idx + 4] = 0.188 * finalAlpha;
+          lineColors[idx + 5] = 1.0 * finalAlpha;
+          
+          lineCount++;
         }
       }
     }
 
-    lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
-    lineGeometry.setAttribute('color', new THREE.Float32BufferAttribute(
-      lineOpacities.map(a => [0.608, 0.188, 1.0]).flat(), // #9B30FF roughly
-      3
-    ));
+    const lineGeo = linesRef.current.geometry;
+    lineGeo.setDrawRange(0, lineCount * 2);
+    lineGeo.attributes.position.needsUpdate = true;
+    lineGeo.attributes.color.needsUpdate = true;
   });
 
   return (
@@ -170,16 +169,32 @@ const BootParticleNetwork = () => {
           transparent 
           opacity={0.9}
           sizeAttenuation={true} 
+          depthWrite={false}
         />
       </points>
       
-      <lineSegments ref={linesRef} geometry={lineGeometry}>
+      <lineSegments ref={linesRef}>
+        <bufferGeometry>
+          <bufferAttribute
+            attach="attributes-position"
+            count={maxLines * 2}
+            array={linePositions}
+            itemSize={3}
+          />
+          <bufferAttribute
+            attach="attributes-color"
+            count={maxLines * 2}
+            array={lineColors}
+            itemSize={3}
+          />
+        </bufferGeometry>
         <lineBasicMaterial 
-          color="#9B30FF" 
+          color="#ffffff" 
           transparent 
-          opacity={0.4} 
+          opacity={1.0} 
           blending={THREE.AdditiveBlending} 
           vertexColors
+          depthWrite={false}
         />
       </lineSegments>
     </group>
