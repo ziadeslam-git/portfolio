@@ -15,72 +15,173 @@ const zPoints = [
   [-4, -6.66, 0], [-1.33, -6.66, 0], [1.33, -6.66, 0], [4, -6.66, 0] // Bottom
 ];
 
-const Boot3DBackground = () => {
+import { useEffect, useRef, useMemo } from 'react';
+import gsap from 'gsap';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { Canvas, useFrame } from '@react-three/fiber';
+import * as THREE from 'three';
+
+interface BootSequenceProps {
+  onComplete: () => void;
+}
+
+const BootParticleNetwork = () => {
+  const pointsRef = useRef<THREE.Points>(null);
+  const linesRef = useRef<THREE.LineSegments>(null);
   const groupRef = useRef<THREE.Group>(null);
-  const meshRefs = useRef<(THREE.Mesh | null)[]>([]);
-  
-  useEffect(() => {
-    // Form the Z shape
-    meshRefs.current.forEach((mesh, i) => {
-      if (!mesh) return;
-      const target = zPoints[i % zPoints.length];
-      
-      // Start scattered wildly
-      mesh.position.set(
-        (Math.random() - 0.5) * 50,
-        (Math.random() - 0.5) * 50,
-        (Math.random() - 0.5) * 30 - 15
-      );
+  const particleCount = 150;
+  const maxDistance = 2.5; // Max distance for lines
 
-      // Animate into Z formation
-      gsap.to(mesh.position, {
-        x: target[0],
-        y: target[1] + 1.33, // offset slightly to center the Z
-        z: target[2],
-        duration: 1.5,
-        ease: "expo.out",
-        delay: 0.2
-      });
+  // Particles state
+  const particles = useMemo(() => {
+    const arr = [];
+    let count = 0;
+    
+    // Target Z shape definition
+    // Top segment (45 pts): (-5, 5) -> (5, 5)
+    for (let i = 0; i < 45; i++) {
+      const t = i / 44;
+      arr.push({ targetX: -5 + t * 10, targetY: 5, targetZ: (Math.random() - 0.5) * 1 });
+      count++;
+    }
+    // Diagonal segment (60 pts): (5, 5) -> (-5, -5)
+    for (let i = 0; i < 60; i++) {
+      const t = i / 59;
+      arr.push({ targetX: 5 - t * 10, targetY: 5 - t * 10, targetZ: (Math.random() - 0.5) * 1 });
+      count++;
+    }
+    // Bottom segment (45 pts): (-5, -5) -> (5, -5)
+    for (let i = 0; i < 45; i++) {
+      const t = i / 44;
+      arr.push({ targetX: -5 + t * 10, targetY: -5, targetZ: (Math.random() - 0.5) * 1 });
+      count++;
+    }
 
-      // Also animate scale for a pop effect
-      mesh.scale.set(0.1, 0.1, 0.1);
-      gsap.to(mesh.scale, {
-        x: 1, y: 1, z: 1,
-        duration: 1.5,
-        ease: "back.out(1.5)",
-        delay: 0.2
-      });
-    });
+    // Initialize with random wandering state
+    return arr.map(p => ({
+      ...p,
+      x: (Math.random() - 0.5) * 20,
+      y: (Math.random() - 0.5) * 20,
+      z: (Math.random() - 0.5) * 10,
+      vx: (Math.random() - 0.5) * 0.04,
+      vy: (Math.random() - 0.5) * 0.04,
+      vz: (Math.random() - 0.5) * 0.04,
+      progress: 0 // 0 = wander, 1 = form Z
+    }));
   }, []);
 
+  const lineGeometry = useMemo(() => new THREE.BufferGeometry(), []);
+  const positionArray = useMemo(() => new Float32Array(particleCount * 3), []);
+
+  useEffect(() => {
+    // Animate to form Z
+    gsap.to(particles, {
+      progress: 1,
+      duration: 2,
+      delay: 0.5,
+      ease: "power3.inOut"
+    });
+  }, [particles]);
+
   useFrame((state) => {
-    if (!groupRef.current) return;
-    
-    // Slow cinematic rotation of the whole Z
-    groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.2;
+    if (!pointsRef.current || !linesRef.current || !groupRef.current) return;
+
+    // Subtle cinematic group rotation
+    groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.2) * 0.1;
     
     // Mouse parallax
-    const targetX = (state.pointer.x * Math.PI) / 5;
-    const targetY = (state.pointer.y * Math.PI) / 5;
-    groupRef.current.rotation.x += 0.05 * (targetY - groupRef.current.rotation.x);
-    groupRef.current.rotation.z += 0.05 * (targetX - groupRef.current.rotation.z);
+    const mouseX = (state.pointer.x * Math.PI) / 10;
+    const mouseY = (state.pointer.y * Math.PI) / 10;
+    groupRef.current.rotation.x += 0.05 * (mouseY - groupRef.current.rotation.x);
+    groupRef.current.rotation.z += 0.05 * (mouseX - groupRef.current.rotation.z);
+
+    // Update particles
+    for (let i = 0; i < particleCount; i++) {
+      const p = particles[i];
+      
+      // Update wander state
+      p.x += p.vx;
+      p.y += p.vy;
+      p.z += p.vz;
+
+      // Bounce limits
+      if (Math.abs(p.x) > 15) p.vx *= -1;
+      if (Math.abs(p.y) > 15) p.vy *= -1;
+      if (Math.abs(p.z) > 10) p.vz *= -1;
+
+      // Lerp between wander and Z-target based on progress
+      const currentX = THREE.MathUtils.lerp(p.x, p.targetX, p.progress);
+      const currentY = THREE.MathUtils.lerp(p.y, p.targetY, p.progress);
+      const currentZ = THREE.MathUtils.lerp(p.z, p.targetZ, p.progress);
+
+      positionArray[i * 3] = currentX;
+      positionArray[i * 3 + 1] = currentY;
+      positionArray[i * 3 + 2] = currentZ;
+    }
+
+    pointsRef.current.geometry.attributes.position.needsUpdate = true;
+
+    // Connect close points
+    const linePositions = [];
+    const lineOpacities = [];
+
+    for (let i = 0; i < particleCount; i++) {
+      for (let j = i + 1; j < particleCount; j++) {
+        const dx = positionArray[i * 3] - positionArray[j * 3];
+        const dy = positionArray[i * 3 + 1] - positionArray[j * 3 + 1];
+        const dz = positionArray[i * 3 + 2] - positionArray[j * 3 + 2];
+        const distSq = dx * dx + dy * dy + dz * dz;
+
+        if (distSq < maxDistance * maxDistance) {
+          linePositions.push(
+            positionArray[i * 3], positionArray[i * 3 + 1], positionArray[i * 3 + 2],
+            positionArray[j * 3], positionArray[j * 3 + 1], positionArray[j * 3 + 2]
+          );
+          // Opacity fades out at max distance
+          const alpha = 1.0 - Math.sqrt(distSq) / maxDistance;
+          // When forming the Z, we can boost the opacity for a glowing effect
+          const boost = particles[0].progress * 0.5;
+          lineOpacities.push(alpha + boost, alpha + boost);
+        }
+      }
+    }
+
+    lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+    lineGeometry.setAttribute('color', new THREE.Float32BufferAttribute(
+      lineOpacities.map(a => [0.608, 0.188, 1.0]).flat(), // #9B30FF roughly
+      3
+    ));
   });
 
   return (
     <group ref={groupRef}>
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[10, 10, 5]} intensity={1} />
+      <points ref={pointsRef}>
+        <bufferGeometry>
+          <bufferAttribute
+            attach="attributes-position"
+            count={particleCount}
+            array={positionArray}
+            itemSize={3}
+          />
+        </bufferGeometry>
+        <pointsMaterial 
+          size={0.15} 
+          color="#c084fc" 
+          transparent 
+          opacity={0.9}
+          sizeAttenuation={true} 
+        />
+      </points>
       
-      {zPoints.map((_, i) => (
-        <Float key={i} speed={2} rotationIntensity={1.5} floatIntensity={1}>
-          <mesh ref={el => meshRefs.current[i] = el}>
-            {i % 3 === 0 ? <icosahedronGeometry args={[0.8, 0]} /> : 
-             i % 3 === 1 ? <octahedronGeometry args={[0.8, 0]} /> : 
-             <boxGeometry args={[1, 1, 1]} />}
-            <meshStandardMaterial color="#9B30FF" wireframe opacity={0.6} transparent />
-          </mesh>
-        </Float>
-      ))}
+      <lineSegments ref={linesRef} geometry={lineGeometry}>
+        <lineBasicMaterial 
+          color="#9B30FF" 
+          transparent 
+          opacity={0.4} 
+          blending={THREE.AdditiveBlending} 
+          vertexColors
+        />
+      </lineSegments>
     </group>
   );
 };
@@ -105,57 +206,8 @@ const BootSequence = ({ onComplete }: BootSequenceProps) => {
         }
       });
 
-      // 1. Meteors Flying (Completely Random Paths)
-      const meteors = gsap.utils.toArray('.meteor');
-      meteors.forEach((meteor: any) => {
-        // Spawn from random edges, go to random edges
-        const side = Math.floor(Math.random() * 4); // 0: top, 1: bottom, 2: left, 3: right
-        let startX, startY, endX, endY;
-        
-        if (side === 0) { // Top to bottom
-          startX = (Math.random() - 0.5) * window.innerWidth * 2;
-          startY = -200;
-          endX = (Math.random() - 0.5) * window.innerWidth * 2;
-          endY = window.innerHeight + 200;
-        } else if (side === 1) { // Bottom to top
-          startX = (Math.random() - 0.5) * window.innerWidth * 2;
-          startY = window.innerHeight + 200;
-          endX = (Math.random() - 0.5) * window.innerWidth * 2;
-          endY = -200;
-        } else if (side === 2) { // Left to right
-          startX = -200;
-          startY = (Math.random() - 0.5) * window.innerHeight * 2;
-          endX = window.innerWidth + 200;
-          endY = (Math.random() - 0.5) * window.innerHeight * 2;
-        } else { // Right to left
-          startX = window.innerWidth + 200;
-          startY = (Math.random() - 0.5) * window.innerHeight * 2;
-          endX = -200;
-          endY = (Math.random() - 0.5) * window.innerHeight * 2;
-        }
-
-        gsap.fromTo(meteor, 
-          { 
-            x: startX, 
-            y: startY, 
-            scale: Math.random() * 0.4 + 0.2, 
-            opacity: Math.random() * 0.4 + 0.2,
-            rotationZ: Math.random() * 360,
-            filter: 'blur(8px)'
-          },
-          {
-            x: endX,
-            y: endY,
-            rotationZ: "+=720",
-            duration: Math.random() * 2 + 1, // varied speed
-            ease: "none",
-            repeat: -1,
-            delay: Math.random() * 2
-          }
-        );
-      });
-
-      // 2. Main Logo comes from deep space (3D effect)
+      // 1. Z-Formation takes about 2.5s to complete (0.5s delay + 2s duration)
+      // So we wait 2.2s before fading in the logo heavily
       tl.fromTo(mainLogoRef.current,
         { 
           scale: 0.01, 
@@ -170,11 +222,11 @@ const BootSequence = ({ onComplete }: BootSequenceProps) => {
           rotationZ: 0,
           duration: 2.5, 
           ease: "expo.inOut",
-          delay: 1.5 // Let the Z shape form first
+          delay: 2.2 // Let the Z particle network form first
         }
       );
 
-      // 3. Name and Role appear elegantly
+      // 2. Name and Role appear elegantly
       tl.fromTo(nameRef.current,
         { y: 30, opacity: 0, filter: "blur(10px)", scale: 0.9 },
         { y: 0, opacity: 1, filter: "blur(0px)", scale: 1, duration: 1.0, ease: "power3.out" },
@@ -187,10 +239,10 @@ const BootSequence = ({ onComplete }: BootSequenceProps) => {
         "-=0.8"
       );
 
-      // 4. Hold to read
+      // 3. Hold to read
       tl.to({}, { duration: 1.5 });
 
-      // 5. Blast Out to reveal portfolio
+      // 4. Blast Out to reveal portfolio
       tl.to(containerRef.current, {
         scale: 1.5,
         opacity: 0,
@@ -211,24 +263,11 @@ const BootSequence = ({ onComplete }: BootSequenceProps) => {
       ref={containerRef} 
       className="fixed inset-0 z-[10000] bg-[#030303] flex flex-col items-center justify-center overflow-hidden"
     >
-      {/* Interactive 3D Background */}
+      {/* Interactive 3D Particle Background */}
       <div className="absolute inset-0 z-0 pointer-events-auto">
-        <Canvas camera={{ position: [0, 0, 10], fov: 50 }}>
-          <Environment preset="city" />
-          <Boot3DBackground />
+        <Canvas camera={{ position: [0, 0, 15], fov: 50 }}>
+          <BootParticleNetwork />
         </Canvas>
-      </div>
-
-      {/* Meteors Container */}
-      <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center">
-        {Array.from({ length: 40 }).map((_, i) => (
-          <img 
-            key={`meteor-${i}`}
-            src={`${import.meta.env.BASE_URL}uploads/profile-new.png`} 
-            className="meteor absolute w-24 h-24 sm:w-32 sm:h-32 object-contain opacity-0"
-            alt=""
-          />
-        ))}
       </div>
 
       <div className="flex flex-col items-center justify-center relative z-10 pointer-events-none">
