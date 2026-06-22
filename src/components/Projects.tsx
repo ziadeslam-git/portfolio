@@ -148,8 +148,8 @@ const Projects = () => {
               // Adjust X translation slightly so outer cards are distinctly separated
               const translateX = Math.sign(offset) * (Math.abs(offset) * spacing + (Math.abs(offset) > 1 ? 40 : 0));
               
-              // Add pyramid effect: Side cards are pushed down
-              const translateY = Math.abs(offset) * 40 + centerHoverTranslateY; 
+              // Add inverted pyramid effect: Side cards are pushed UP (negative Y)
+              const translateY = -Math.abs(offset) * 60 + centerHoverTranslateY; 
               const rotateY = -Math.sign(offset) * (isMobile ? 15 : 30);
               
               // Blur side cards, but remove blur entirely if the user hovers over it

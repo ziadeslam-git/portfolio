@@ -285,6 +285,10 @@
     border: 1px solid hsl(262 83% 58% / 0.1);
   }
 
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+
   /* Neon border effect */
   .neon-border {
     position: relative;
