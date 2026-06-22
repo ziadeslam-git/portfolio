@@ -87,7 +87,7 @@ const BootSequence = ({ onComplete }: BootSequenceProps) => {
           {/* Glowing background */}
           <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl animate-pulse"></div>
           {/* Fallback logo icon/text */}
-          <Code2 className="w-12 h-12 text-primary relative z-10" />
+          <img src={`${import.meta.env.BASE_URL}uploads/profile-new.png`} alt="Ziad Logo" className="w-14 h-14 object-contain relative z-10" />
         </div>
 
         {/* Name */}
