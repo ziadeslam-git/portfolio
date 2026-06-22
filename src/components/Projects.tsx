@@ -15,9 +15,11 @@ const Projects = () => {
   
   // Carousel State
   const [activeIndex, setActiveIndex] = useState(0);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const lastWheelTime = useRef<number>(0);
 
   // We want the most important projects to be central.
   // Actually, we just sort them by importance so the best ones are first.
@@ -29,14 +31,19 @@ const Projects = () => {
     });
   }, []);
 
-  // Prevent page scroll when using mouse wheel on carousel
+  // Prevent page scroll when using mouse wheel on carousel and throttle to fix glitching
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
     const handleWheelPrevent = (e: WheelEvent) => {
       e.preventDefault();
+      
+      const now = Date.now();
+      if (now - lastWheelTime.current < 400) return; // Throttle fast scrolling to prevent glitching
+
       if (Math.abs(e.deltaX) > 20 || Math.abs(e.deltaY) > 20) {
+        lastWheelTime.current = now;
         if (e.deltaX > 0 || e.deltaY > 0) {
           navigate(1);
         } else {
@@ -123,22 +130,30 @@ const Projects = () => {
           >
             {displayProjects.map((project, index) => {
               const offset = getOffset(index);
+              const isHovered = hoveredIndex === index;
               
               // Base 3D positioning
               const isMobile = window.innerWidth < 768;
-              const spacing = isMobile ? 140 : 280; // Widen the spread
-              const zPush = isMobile ? 120 : 180;
+              const spacing = isMobile ? 120 : 250; // Tweak spread
+              const zPush = isMobile ? 120 : 200;
               
-              const baseScale = 1 - Math.abs(offset) * 0.15;
+              // Add a subtle lift to the center card when hovered
+              const centerHoverLift = (offset === 0 && isHovered) ? 0.05 : 0;
+              const centerHoverTranslateY = (offset === 0 && isHovered) ? -15 : 0;
+
+              const baseScale = 1 - Math.abs(offset) * 0.15 + centerHoverLift;
               const baseZ = -Math.abs(offset) * zPush;
-              const translateX = offset * spacing;
-              // Add pyramid effect: Side cards are pushed down
-              const translateY = Math.abs(offset) * 40; 
-              const rotateY = -Math.sign(offset) * (isMobile ? 15 : 25);
               
-              // Blur side cards
-              const blurAmount = Math.max(0, (Math.abs(offset) - 0.5) * 2);
-              const opacity = Math.max(0, 1 - Math.abs(offset) * 0.3);
+              // Adjust X translation slightly so outer cards are distinctly separated
+              const translateX = Math.sign(offset) * (Math.abs(offset) * spacing + (Math.abs(offset) > 1 ? 40 : 0));
+              
+              // Add pyramid effect: Side cards are pushed down
+              const translateY = Math.abs(offset) * 40 + centerHoverTranslateY; 
+              const rotateY = -Math.sign(offset) * (isMobile ? 15 : 30);
+              
+              // Blur side cards, but remove blur entirely if the user hovers over it
+              const blurAmount = isHovered ? 0 : Math.max(0, (Math.abs(offset) - 0.5) * 2);
+              const opacity = isHovered ? 1 : Math.max(0, 1 - Math.abs(offset) * 0.3);
 
               // Sort order: center card should be on top
               const zIndex = 100 - Math.abs(offset);
@@ -153,6 +168,8 @@ const Projects = () => {
                     filter: `blur(${blurAmount}px)`,
                     opacity: opacity
                   }}
+                  onMouseEnter={() => setHoveredIndex(index)}
+                  onMouseLeave={() => setHoveredIndex(null)}
                   onClick={() => {
                     if (offset === 0) {
                       setActiveProject(project);
