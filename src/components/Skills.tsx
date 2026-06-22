@@ -95,6 +95,12 @@ const Skills = () => {
                     <div className={`w-full md:w-1/2 ${isEven ? 'md:pr-12 lg:pr-16' : 'md:pl-12 lg:pl-16'}`}>
                       <MorphElement type={isEven ? "slide-right" : "slide-left"} delay={0.1}>
                         <div className="p-8 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 hover:border-primary/30 transition-all duration-300 group">
+                          {/* Mac Window Dots */}
+                          <div className="flex gap-1.5 mb-6">
+                            <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]"></div>
+                            <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]"></div>
+                            <div className="w-2.5 h-2.5 rounded-full bg-[#27c93f]"></div>
+                          </div>
                           
                           <div className="flex items-center gap-4 border-b border-white/10 pb-4 mb-6">
                             <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 group-hover:border-primary/50 group-hover:bg-primary/10 transition-colors">

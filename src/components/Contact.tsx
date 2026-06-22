@@ -36,6 +36,12 @@ const Contact = () => {
 
           <MorphElement type="scale" delay={0.2}>
             <div className="relative rounded-2xl overflow-hidden border border-primary/30 bg-black/60 backdrop-blur-xl shadow-[0_0_50px_rgba(124,58,237,0.15)] p-8 sm:p-10 pointer-events-auto">
+              {/* Mac Window Dots */}
+              <div className="flex gap-1.5 mb-8">
+                <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-[#27c93f]"></div>
+              </div>
               <form onSubmit={onSubmit} className="flex flex-col gap-6 relative z-30">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
