@@ -13,50 +13,101 @@ gsap.registerPlugin(ScrollTrigger);
 const Projects = () => {
   const [filter, setFilter] = useState("important");
   const [activeProject, setActiveProject] = useState<typeof projects[0] | null>(null);
-  const deckRef = useRef<HTMLDivElement>(null);
+  
+  // Carousel State
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
 
   const filteredProjects = projects.filter((p) => {
     if (filter === "important") return p.isImportant;
     return true;
   });
 
+  // Reset index when filter changes
   useEffect(() => {
-    if (!deckRef.current) return;
-    
-    const ctx = gsap.context(() => {
-      const cards = gsap.utils.toArray('.project-card-wrapper');
-      
-      const isMobile = window.innerWidth < 768;
-      
-      gsap.fromTo(cards, 
-        {
-          y: 400,
-          x: 0,
-          scale: 0.5,
-          opacity: 0,
-          rotationZ: (i: number) => (i - (cards.length - 1) / 2) * 15
-        },
-        {
-          y: (i: number) => isMobile ? (i - (cards.length - 1) / 2) * 140 : 0,
-          x: (i: number) => isMobile ? 0 : (i - (cards.length - 1) / 2) * 180,
-          scale: 1,
-          opacity: 1,
-          rotationZ: (i: number) => (i - (cards.length - 1) / 2) * (isMobile ? 3 : 5),
-          stagger: 0.1,
-          ease: "power3.out",
-          duration: 1.2,
-          scrollTrigger: {
-            trigger: deckRef.current,
-            start: "top 80%", 
-            end: "bottom 20%",
-            toggleActions: "play reverse play reverse",
-          }
-        }
-      );
-    }, deckRef);
+    setActiveIndex(0);
+  }, [filter]);
 
-    return () => ctx.revert();
-  }, [filteredProjects.length]);
+  // Drag Handlers
+  const handlePointerDown = (e: React.PointerEvent) => {
+    setIsDragging(true);
+    setStartX(e.clientX);
+    // Remove pointer capture so mouse leave works easily
+    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDragging) return;
+    const diffX = e.clientX - startX;
+    
+    // Threshold to swipe
+    if (Math.abs(diffX) > 50) {
+      if (diffX > 0) {
+        // Swipe right -> go to previous
+        navigate(-1);
+      } else {
+        // Swipe left -> go to next
+        navigate(1);
+      }
+      setIsDragging(false);
+    }
+  };
+
+  const handlePointerUp = () => {
+    setIsDragging(false);
+  };
+
+  // Wheel Handler
+  const handleWheel = (e: React.WheelEvent) => {
+    if (Math.abs(e.deltaX) > 20 || Math.abs(e.deltaY) > 20) {
+      if (e.deltaX > 0 || e.deltaY > 0) {
+        navigate(1);
+      } else {
+        navigate(-1);
+      }
+    }
+  };
+
+  const navigate = (direction: number) => {
+    setActiveIndex((prev) => {
+      const total = filteredProjects.length;
+      let next = prev + direction;
+      if (next < 0) next = total - 1;
+      if (next >= total) next = 0;
+      return next;
+    });
+  };
+
+  const getOffset = (index: number) => {
+    const total = filteredProjects.length;
+    let offset = index - activeIndex;
+    
+    // Wrap around for infinite loop
+    if (offset > Math.floor(total / 2)) {
+      offset -= total;
+    } else if (offset < -Math.floor(total / 2)) {
+      offset += total;
+    }
+    
+    return offset;
+  };
+
+  const getHoverBoost = (index: number) => {
+    if (hoveredIndex === null) return 0;
+    
+    const total = filteredProjects.length;
+    let diff = index - hoveredIndex;
+    
+    // Wrap around for hover proximity
+    if (diff > Math.floor(total / 2)) diff -= total;
+    else if (diff < -Math.floor(total / 2)) diff += total;
+    
+    if (Math.abs(diff) === 0) return 1;    // The hovered card itself
+    if (Math.abs(diff) === 1) return 0.5;  // Immediate neighbors
+    return 0; // Others unaffected
+  };
 
   return (
     <section id="projects" className="py-24 relative overflow-hidden bg-transparent z-10">
@@ -67,7 +118,7 @@ const Projects = () => {
               My <span className="text-primary">Projects</span>
             </h2>
             <p className="text-white/60 text-lg sm:text-xl max-w-2xl mx-auto mb-8">
-              Interactive 3D tiles. Hover to flip, click to inspect.
+              Interactive 3D tiles. Swipe, scroll, or drag to explore. Hover to expand. Click for details.
             </p>
 
             <div className="flex justify-center gap-4">
@@ -96,115 +147,183 @@ const Projects = () => {
             </div>
           </MorphElement>
 
-          <div ref={deckRef} className="relative flex justify-center items-center perspective-[2000px] h-[800px] md:h-[600px] py-12">
-            {filteredProjects.map((project, index) => (
-              <div key={project.id} className="project-card-wrapper absolute w-[90%] max-w-[350px] md:w-[400px] h-[500px]" style={{ zIndex: index }}>
+          {/* 3D Coverflow Container */}
+          <div 
+            className="relative flex justify-center items-center perspective-[2000px] h-[600px] md:h-[600px] py-12 touch-none select-none"
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerLeave={handlePointerUp}
+            onWheel={handleWheel}
+          >
+            {filteredProjects.map((project, index) => {
+              const offset = getOffset(index);
+              const hoverBoost = getHoverBoost(index);
+              
+              // Base 3D positioning
+              const isMobile = window.innerWidth < 768;
+              const spacing = isMobile ? 100 : 200;
+              const zPush = isMobile ? 120 : 150;
+              
+              const baseScale = 1 - Math.abs(offset) * 0.15;
+              const baseZ = -Math.abs(offset) * zPush;
+              const translateX = offset * spacing;
+              const rotateY = -Math.sign(offset) * (isMobile ? 15 : 25);
+              
+              // Apply MacOS Dock Hover Effects
+              const hoverScaleBoost = hoverBoost * 0.1;
+              const hoverZBoost = hoverBoost * 50;
+              
+              // Straighten rotation slightly if hovered
+              const finalRotateY = hoverBoost === 1 ? 0 : rotateY;
+              
+              const finalScale = baseScale + hoverScaleBoost;
+              const finalZ = baseZ + hoverZBoost;
+              
+              // Blur side cards, unless hovered
+              const blurAmount = Math.max(0, (Math.abs(offset) - hoverBoost * 1.5) * 3);
+              const opacity = Math.max(0, 1 - Math.abs(offset) * 0.4 + hoverBoost * 0.5);
+
+              // Sort order: center card should be on top
+              const zIndex = 100 - Math.abs(offset) + Math.floor(hoverBoost * 10);
+
+              return (
                 <div 
-                  className="project-card relative w-full h-full group cursor-pointer transform-style-3d transition-transform duration-700 ease-out hover:!rotate-z-0 hover:-translate-y-16 hover:scale-105"
-                  onClick={() => setActiveProject(project)}
+                  key={project.id} 
+                  className="project-card-wrapper absolute w-[85%] max-w-[320px] md:w-[400px] h-[500px] transition-all duration-500 ease-out"
+                  style={{ 
+                    zIndex,
+                    transform: `translateX(${translateX}px) translateZ(${finalZ}px) rotateY(${finalRotateY}deg) scale(${finalScale})`,
+                    filter: `blur(${blurAmount}px)`,
+                    opacity: opacity
+                  }}
+                  onMouseEnter={() => setHoveredIndex(index)}
+                  onMouseLeave={() => setHoveredIndex(null)}
+                  onClick={() => {
+                    if (offset === 0) {
+                      setActiveProject(project);
+                    } else {
+                      setActiveIndex(index);
+                    }
+                  }}
                 >
-                  <div className="relative w-full h-full transform-style-3d transition-transform duration-1000 ease-out group-hover:rotate-y-180">
-                  <div className="absolute inset-0 backface-hidden bg-black/80 backdrop-blur-xl border border-white/20 hover:border-primary/50 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.8)] flex flex-col">
-                    <div className="h-[220px] w-full bg-black/80 relative overflow-hidden">
-                      {project.imageName ? (
-                        <img 
-                          src={`${import.meta.env.BASE_URL}uploads/${project.imageName}`} 
-                          alt={project.title}
-                          className="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-700"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-purple-900/20">
-                          <span className="text-white/20 font-bold text-4xl">{project.title.substring(0, 2)}</span>
+                  <div 
+                    className={`project-card relative w-full h-full group cursor-pointer transform-style-3d transition-transform duration-700 ease-out hover:rotate-y-180`}
+                  >
+                    {/* Front Face */}
+                    <div className="absolute inset-0 backface-hidden bg-black/80 backdrop-blur-xl border border-white/20 group-hover:border-primary/50 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.8)] flex flex-col">
+                      <div className="h-[220px] w-full bg-black/80 relative overflow-hidden">
+                        {project.imageName ? (
+                          <img 
+                            src={`${import.meta.env.BASE_URL}uploads/${project.imageName}`} 
+                            alt={project.title}
+                            className="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-700"
+                            draggable={false}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-purple-900/20">
+                            <span className="text-white/20 font-bold text-4xl">{project.title.substring(0, 2)}</span>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent"></div>
+                        <div className="absolute top-4 right-4 px-3 py-1 bg-black/60 backdrop-blur-md rounded-full border border-white/10">
+                          <span className="text-xs font-bold text-primary uppercase">{project.badge}</span>
                         </div>
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent"></div>
-                      <div className="absolute top-4 right-4 px-3 py-1 bg-black/60 backdrop-blur-md rounded-full border border-white/10">
-                        <span className="text-xs font-bold text-primary uppercase">{project.badge}</span>
+                        
+                        {/* Highlight strictly on center active card */}
+                        {offset === 0 && hoverBoost === 1 && (
+                           <div className="absolute inset-0 bg-primary/20 animate-pulse pointer-events-none mix-blend-overlay"></div>
+                        )}
                       </div>
-                    </div>
-                    
-                    <div className="p-6 flex-1 flex flex-col justify-between relative z-10 bg-black/50">
-                      <div>
-                        <h3 className="text-2xl font-bold text-white mb-2">{project.title}</h3>
-                        <div className="flex flex-wrap gap-2 mt-4">
-                          {project.techStack.slice(0, 3).map((tech, i) => (
-                            <span key={i} className="px-2.5 py-1 bg-white/10 border border-white/10 rounded-md text-white/90 text-xs font-medium">
-                              {tech.name}
-                            </span>
-                          ))}
-                          {project.techStack.length > 3 && (
-                            <span className="px-2.5 py-1 bg-white/5 border border-white/10 rounded-md text-white/50 text-xs font-medium">
-                              +{project.techStack.length - 3}
-                            </span>
+                      
+                      <div className="p-6 flex-1 flex flex-col justify-between relative z-10 bg-black/50">
+                        <div>
+                          <h3 className="text-2xl font-bold text-white mb-2">{project.title}</h3>
+                          <div className="flex flex-wrap gap-2 mt-4">
+                            {project.techStack.slice(0, 3).map((tech, i) => (
+                              <span key={i} className="px-2.5 py-1 bg-white/10 border border-white/10 rounded-md text-white/90 text-xs font-medium">
+                                {tech.name}
+                              </span>
+                            ))}
+                            {project.techStack.length > 3 && (
+                              <span className="px-2.5 py-1 bg-white/5 border border-white/10 rounded-md text-white/50 text-xs font-medium">
+                                +{project.techStack.length - 3}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-primary text-sm font-semibold flex items-center mt-4">
+                          {offset === 0 ? (
+                             <>Hover to flip <ArrowRight className="w-4 h-4 ml-2" /></>
+                          ) : (
+                             <>Click to bring to center</>
                           )}
                         </div>
                       </div>
-                      <div className="text-primary text-sm font-semibold flex items-center mt-4">
-                        Hover to flip <ArrowRight className="w-4 h-4 ml-2" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="absolute inset-0 backface-hidden rotate-y-180 bg-[#0a0a0a] border border-primary/40 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(124,58,237,0.3)] flex flex-col">
-                    {project.imageName && (
-                      <div className="absolute inset-0 z-0">
-                        <img 
-                          src={`${import.meta.env.BASE_URL}uploads/${project.imageName}`} 
-                          alt={project.title}
-                          className="w-full h-full object-cover opacity-50 blur-[2px] mix-blend-lighten"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/40 via-[#0a0a0a]/80 to-[#0a0a0a]"></div>
-                      </div>
-                    )}
-                    
-                    <div className="relative z-10 p-6 flex flex-col h-full">
-                      <h3 className="text-xl font-bold text-white mb-3 flex items-center justify-between">
-                      {project.title}
-                      <span className="text-xs text-primary/80 font-mono">BACKEND</span>
-                    </h3>
-                    
-                    <p className="text-white/70 text-sm leading-relaxed flex-1">
-                      {project.description || "Click to view full architectural details and feature breakdowns."}
-                    </p>
-                    
-                    <div className="mb-6">
-                      <h4 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-2">Full Stack</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {project.techStack.map((tech, i) => (
-                          <span key={i} className="flex items-center gap-1.5 px-2 py-1 bg-white/10 border border-white/20 rounded-md text-white/90 text-[10px] font-medium">
-                            <span className={`w-1.5 h-1.5 rounded-full ${tech.color}`}></span>
-                            {tech.name}
-                          </span>
-                        ))}
-                      </div>
                     </div>
 
-                    <div className="flex items-center gap-3 mt-auto relative z-20">
-                      <Button className="flex-1 bg-primary hover:bg-primary/90 text-white text-xs font-bold pointer-events-auto" onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveProject(project);
-                      }}>
-                        Full Details
-                      </Button>
-                      
-                      {project.githubUrl !== "#" && (
-                        <Button size="icon" variant="outline" className="bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-primary pointer-events-auto" asChild onClick={(e) => e.stopPropagation()}>
-                          <a href={project.githubUrl} target="_blank" rel="noopener noreferrer"><Github className="w-4 h-4" /></a>
-                        </Button>
+                    {/* Back Face */}
+                    <div className="absolute inset-0 backface-hidden rotate-y-180 bg-[#0a0a0a] border border-primary/40 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(124,58,237,0.3)] flex flex-col">
+                      {project.imageName && (
+                        <div className="absolute inset-0 z-0">
+                          <img 
+                            src={`${import.meta.env.BASE_URL}uploads/${project.imageName}`} 
+                            alt={project.title}
+                            className="w-full h-full object-cover opacity-50 blur-[2px] mix-blend-lighten"
+                            draggable={false}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/40 via-[#0a0a0a]/80 to-[#0a0a0a]"></div>
+                        </div>
                       )}
                       
-                      {project.liveUrl !== "#" && (
-                        <Button size="icon" variant="outline" className="bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-primary pointer-events-auto" asChild onClick={(e) => e.stopPropagation()}>
-                          <a href={project.liveUrl} target="_blank" rel="noopener noreferrer"><ExternalLink className="w-4 h-4" /></a>
+                      <div className="relative z-10 p-6 flex flex-col h-full">
+                        <h3 className="text-xl font-bold text-white mb-3 flex items-center justify-between">
+                        {project.title}
+                        <span className="text-xs text-primary/80 font-mono">BACKEND</span>
+                      </h3>
+                      
+                      <p className="text-white/70 text-sm leading-relaxed flex-1">
+                        {project.description || "Click to view full architectural details and feature breakdowns."}
+                      </p>
+                      
+                      <div className="mb-6">
+                        <h4 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-2">Full Stack</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {project.techStack.map((tech, i) => (
+                            <span key={i} className="flex items-center gap-1.5 px-2 py-1 bg-white/10 border border-white/20 rounded-md text-white/90 text-[10px] font-medium">
+                              <span className={`w-1.5 h-1.5 rounded-full ${tech.color}`}></span>
+                              {tech.name}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 mt-auto relative z-20">
+                        <Button className="flex-1 bg-primary hover:bg-primary/90 text-white text-xs font-bold pointer-events-auto" onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveProject(project);
+                        }}>
+                          Full Details
                         </Button>
-                      )}
+                        
+                        {project.githubUrl !== "#" && (
+                          <Button size="icon" variant="outline" className="bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-primary pointer-events-auto" asChild onClick={(e) => e.stopPropagation()}>
+                            <a href={project.githubUrl} target="_blank" rel="noopener noreferrer"><Github className="w-4 h-4" /></a>
+                          </Button>
+                        )}
+                        
+                        {project.liveUrl !== "#" && (
+                          <Button size="icon" variant="outline" className="bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-primary pointer-events-auto" asChild onClick={(e) => e.stopPropagation()}>
+                            <a href={project.liveUrl} target="_blank" rel="noopener noreferrer"><ExternalLink className="w-4 h-4" /></a>
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        ))}
+              );
+            })}
           </div>
         </div>
       </div>
