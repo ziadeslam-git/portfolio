@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, FileText, Download } from "lucide-react";
 import { useState, useEffect } from "react";
 
 const Navigation = () => {
@@ -48,9 +48,9 @@ const Navigation = () => {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 sm:pt-6 px-4">
+    <nav className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 sm:pt-6 px-4 pointer-events-none">
       {/* Pill-shaped navbar */}
-      <div className={`transition-all duration-500 ${
+      <div className={`pointer-events-auto transition-all duration-500 ${
         isScrolled 
           ? 'glass-card shadow-lg' 
           : 'bg-background-secondary/80 backdrop-blur-md'
@@ -62,7 +62,7 @@ const Navigation = () => {
               <button
                 key={item.id}
                 onClick={() => scrollToSection(item.id)}
-                className={`px-4 lg:px-8 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                className={`px-4 lg:px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
                   activeSection === item.id 
                     ? 'text-primary bg-primary/10' 
                     : 'text-white/70 hover:text-white'
@@ -71,6 +71,27 @@ const Navigation = () => {
                 {item.label}
               </button>
             ))}
+
+            {/* CV Split Button */}
+            <div className="flex items-center ml-2 border-l border-white/10 pl-2">
+              <a 
+                href={`${import.meta.env.BASE_URL}uploads/Ziad_ELkholy_CV.pdf`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-3 lg:px-4 py-2 rounded-l-full text-sm font-medium transition-all duration-300 text-primary bg-primary/10 hover:bg-primary/20"
+              >
+                <FileText className="w-4 h-4" />
+                CV
+              </a>
+              <a 
+                href={`${import.meta.env.BASE_URL}uploads/Ziad_ELkholy_CV.pdf`}
+                download
+                className="flex items-center justify-center px-3 py-2 rounded-r-full transition-all duration-300 text-primary bg-primary/10 hover:bg-primary/20 border-l border-primary/20"
+                title="Download CV"
+              >
+                <Download className="w-4 h-4" />
+              </a>
+            </div>
           </div>
 
           {/* Mobile menu button */}
@@ -87,7 +108,7 @@ const Navigation = () => {
 
       {/* Mobile Navigation */}
       {isOpen && (
-        <div className="md:hidden fixed inset-x-4 top-20 glass-card rounded-2xl shadow-xl animate-fade-in">
+        <div className="md:hidden absolute inset-x-4 top-20 glass-card rounded-2xl shadow-xl animate-fade-in pointer-events-auto">
           <div className="py-4 space-y-1">
             {navItems.map(item => (
               <button
@@ -102,7 +123,29 @@ const Navigation = () => {
                 {item.label}
               </button>
             ))}
-            <div className="px-4 pt-3">
+            
+            {/* Mobile CV Button */}
+            <div className="px-4 py-3 flex gap-2">
+              <a 
+                href={`${import.meta.env.BASE_URL}uploads/Ziad_ELkholy_CV.pdf`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 text-primary bg-primary/10 hover:bg-primary/20"
+              >
+                <FileText className="w-4 h-4" />
+                View CV
+              </a>
+              <a 
+                href={`${import.meta.env.BASE_URL}uploads/Ziad_ELkholy_CV.pdf`}
+                download
+                className="flex items-center justify-center px-4 py-2 rounded-full transition-all duration-300 text-primary bg-primary/10 hover:bg-primary/20"
+                title="Download CV"
+              >
+                <Download className="w-4 h-4" />
+              </a>
+            </div>
+
+            <div className="px-4 pt-2">
               <Button 
                 onClick={() => scrollToSection('contact')}
                 className="w-full bg-primary hover:bg-primary-glow text-primary-foreground rounded-full"
