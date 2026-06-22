@@ -120,15 +120,16 @@ const Projects = () => {
           </MorphElement>
 
           {/* 3D Coverflow Container */}
-          <div 
-            ref={containerRef}
-            className="relative flex justify-center items-center perspective-[2000px] h-[600px] md:h-[600px] py-12 touch-none select-none"
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerLeave={handlePointerUp}
-          >
-            {displayProjects.map((project, index) => {
+          <MorphElement type="slide-up" delay={0.2} className="w-full">
+            <div 
+              ref={containerRef}
+              className="relative flex justify-center items-center perspective-[2000px] h-[600px] md:h-[600px] py-12 touch-none select-none"
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerLeave={handlePointerUp}
+            >
+              {displayProjects.map((project, index) => {
               const offset = getOffset(index);
               const isHovered = hoveredIndex === index;
               
@@ -141,7 +142,7 @@ const Projects = () => {
               const centerHoverLift = (offset === 0 && isHovered) ? 0.05 : 0;
               const centerHoverTranslateY = (offset === 0 && isHovered) ? -15 : 0;
 
-              const baseScale = 1 - Math.abs(offset) * 0.15 + centerHoverLift;
+              const baseScale = 1 - Math.abs(offset) * 0.05 + centerHoverLift;
               const baseZ = -Math.abs(offset) * zPush;
               
               // Adjust X translation slightly so outer cards are distinctly separated
@@ -153,7 +154,7 @@ const Projects = () => {
               
               // Blur side cards, but remove blur entirely if the user hovers over it
               const blurAmount = isHovered ? 0 : Math.max(0, (Math.abs(offset) - 0.5) * 2);
-              const opacity = isHovered ? 1 : Math.max(0, 1 - Math.abs(offset) * 0.3);
+              const opacity = isHovered ? 1 : Math.max(0, 1 - Math.abs(offset) * 0.15);
 
               // Sort order: center card should be on top
               const zIndex = 100 - Math.abs(offset);
@@ -181,13 +182,11 @@ const Projects = () => {
                     }
                   }}
                 >
-                  {/* Animation Wrapper for initial scroll appearance */}
-                  <MorphElement type="slide-up" delay={staggerDelay} className="w-full h-full">
-                    <div 
-                      className={`project-card relative w-full h-full group cursor-pointer transform-style-3d transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] hover:rotate-y-180`}
-                    >
-                      {/* Front Face */}
-                      <div className="absolute inset-0 backface-hidden bg-black/90 backdrop-blur-xl border border-white/20 group-hover:border-primary/50 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.8)] flex flex-col">
+                  <div 
+                    className={`project-card relative w-full h-full group cursor-pointer transform-style-3d transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] hover:rotate-y-180`}
+                  >
+                    {/* Front Face */}
+                    <div className="absolute inset-0 backface-hidden bg-black/90 backdrop-blur-xl border border-white/20 group-hover:border-primary/50 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.8)] flex flex-col">
                         <div className="h-[220px] w-full bg-black relative overflow-hidden">
                           {project.imageName ? (
                             <img 
@@ -285,13 +284,12 @@ const Projects = () => {
                         </div>
                       </div>
                     </div>
-                  </MorphElement>
-                </div>
+                  </div>
               );
             })}
-          </div>
+            </div>
+          </MorphElement>
         </div>
-      </div>
 
       {/* Project Detail Overlay via Portal to escape stacking context */}
       {activeProject && createPortal(
@@ -381,6 +379,7 @@ const Projects = () => {
           </div>
         </div>
       , document.body)}
+      </div>
     </section>
   );
 };
