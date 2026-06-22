@@ -27,44 +27,45 @@ const BootSequence = ({ onComplete }: BootSequenceProps) => {
         }
       });
 
-      // Step 1: Show Logo (drop in / scale up)
+      // Step 1: Logo slams down action-style
       tl.fromTo(logoRef.current, 
-        { scale: 0.5, opacity: 0, y: 30 },
-        { scale: 1, opacity: 1, y: 0, duration: 1.2, ease: "back.out(1.5)" }
+        { scale: 3, opacity: 0, y: -100 },
+        { scale: 1.2, opacity: 1, y: 0, duration: 0.7, ease: "bounce.out" }
       );
 
-      // Step 2: Name appears
+      // Step 2: Name whips in
       tl.fromTo(nameRef.current,
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" },
-        "-=0.4"
+        { x: -50, opacity: 0, skewX: 10 },
+        { x: 0, opacity: 1, skewX: 0, duration: 0.5, ease: "power4.out" },
+        "-=0.2"
       );
 
-      // Step 3: Role appears
+      // Step 3: Role snaps in with letter spacing
       tl.fromTo(roleRef.current,
-        { opacity: 0, y: 20, filter: "blur(5px)" },
-        { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.8, ease: "power3.out" },
-        "-=0.4"
+        { scale: 1.2, opacity: 0, letterSpacing: "1em" },
+        { scale: 1, opacity: 1, letterSpacing: "0.2em", duration: 0.5, ease: "power4.out" },
+        "-=0.2"
       );
 
-      // Step 4: Hold for a moment to let user read
-      tl.to({}, { duration: 0.8 });
+      // Step 4: Hold
+      tl.to({}, { duration: 1.0 });
 
-      // Step 5: Dramatic exit (everything moves up and fades out)
+      // Step 5: Blast out
       tl.to([logoRef.current, nameRef.current, roleRef.current], {
-        y: -50,
+        scale: 1.5,
         opacity: 0,
-        stagger: 0.1,
-        duration: 0.6,
+        filter: "blur(10px)",
+        stagger: 0.05,
+        duration: 0.4,
         ease: "power2.in"
       });
 
       // Fade out background
       tl.to(containerRef.current, {
         opacity: 0,
-        duration: 0.6,
+        duration: 0.4,
         ease: "power2.inOut"
-      }, "-=0.3");
+      }, "-=0.2");
 
     }, containerRef);
 
@@ -76,32 +77,31 @@ const BootSequence = ({ onComplete }: BootSequenceProps) => {
   return (
     <div 
       ref={containerRef} 
-      className="fixed inset-0 z-[10000] bg-[#050505] flex flex-col items-center justify-center"
+      className="fixed inset-0 z-[10000] bg-[#050505] flex flex-col items-center justify-center overflow-hidden"
     >
       <div className="flex flex-col items-center justify-center">
-        {/* Logo Element */}
+        {/* Logo Element (No Box/Frame) */}
         <div 
           ref={logoRef} 
-          className="mb-8 relative flex items-center justify-center w-24 h-24 rounded-2xl bg-black/50 border border-white/10 shadow-[0_0_50px_rgba(124,58,237,0.3)]"
+          className="mb-8 relative flex items-center justify-center"
         >
-          {/* Glowing background */}
-          <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl animate-pulse"></div>
-          {/* Fallback logo icon/text */}
-          <img src={`${import.meta.env.BASE_URL}uploads/profile-new.png`} alt="Ziad Logo" className="w-14 h-14 object-contain relative z-10" />
+          {/* Glowing aura */}
+          <div className="absolute inset-0 bg-primary/40 rounded-full blur-2xl animate-pulse scale-[2]"></div>
+          <img src={`${import.meta.env.BASE_URL}uploads/profile-new.png`} alt="Ziad Logo" className="w-20 h-20 sm:w-24 sm:h-24 object-contain relative z-10" />
         </div>
 
-        {/* Name */}
+        {/* Name (New Font: Serif) */}
         <h1 
           ref={nameRef} 
-          className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-4 tracking-tight"
+          className="text-5xl sm:text-6xl md:text-7xl font-serif font-black text-white mb-4 tracking-tighter drop-shadow-xl"
         >
           Ziad ElKholy
         </h1>
 
-        {/* Role */}
+        {/* Role (New Font: Mono) */}
         <h2 
           ref={roleRef} 
-          className="text-lg sm:text-xl md:text-2xl font-light text-primary tracking-[0.2em] uppercase"
+          className="text-base sm:text-xl md:text-2xl font-mono font-bold text-primary tracking-[0.2em] uppercase"
         >
           Software Engineering
         </h2>
