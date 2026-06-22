@@ -20,27 +20,39 @@ const BootParticleNetwork = () => {
     const arr = [];
     let count = 0;
     
-    // Target Z shape definition
+    // Target Z shape definition with thickness
     // Top segment (45 pts): (-5, 5) -> (5, 5)
     for (let i = 0; i < 45; i++) {
       const t = i / 44;
-      arr.push({ targetX: -5 + t * 10, targetY: 5, targetZ: (Math.random() - 0.5) * 1 });
+      arr.push({ 
+        targetX: -5 + t * 10 + (Math.random() - 0.5) * 1.5, 
+        targetY: 5 + (Math.random() - 0.5) * 1.5, 
+        targetZ: (Math.random() - 0.5) * 2 
+      });
       count++;
     }
     // Diagonal segment (60 pts): (5, 5) -> (-5, -5)
     for (let i = 0; i < 60; i++) {
       const t = i / 59;
-      arr.push({ targetX: 5 - t * 10, targetY: 5 - t * 10, targetZ: (Math.random() - 0.5) * 1 });
+      arr.push({ 
+        targetX: 5 - t * 10 + (Math.random() - 0.5) * 1.5, 
+        targetY: 5 - t * 10 + (Math.random() - 0.5) * 1.5, 
+        targetZ: (Math.random() - 0.5) * 2 
+      });
       count++;
     }
     // Bottom segment (45 pts): (-5, -5) -> (5, -5)
     for (let i = 0; i < 45; i++) {
       const t = i / 44;
-      arr.push({ targetX: -5 + t * 10, targetY: -5, targetZ: (Math.random() - 0.5) * 1 });
+      arr.push({ 
+        targetX: -5 + t * 10 + (Math.random() - 0.5) * 1.5, 
+        targetY: -5 + (Math.random() - 0.5) * 1.5, 
+        targetZ: (Math.random() - 0.5) * 2 
+      });
       count++;
     }
 
-    // Initialize with random wandering state
+    // Initialize with random wandering state and explosion targets
     return arr.map(p => ({
       ...p,
       x: (Math.random() - 0.5) * 20,
@@ -49,7 +61,11 @@ const BootParticleNetwork = () => {
       vx: (Math.random() - 0.5) * 0.04,
       vy: (Math.random() - 0.5) * 0.04,
       vz: (Math.random() - 0.5) * 0.04,
-      progress: 0 // 0 = wander, 1 = form Z
+      explosionTargetX: (Math.random() - 0.5) * 80,
+      explosionTargetY: (Math.random() - 0.5) * 80,
+      explosionTargetZ: (Math.random() - 0.5) * 60,
+      progress: 0, // 0 = wander, 1 = form Z
+      explosionProgress: 0 // 0 = Z form, 1 = exploded
     }));
   }, []);
 
@@ -65,6 +81,14 @@ const BootParticleNetwork = () => {
       duration: 2,
       delay: 0.5,
       ease: "power3.inOut"
+    });
+
+    // Animate Explosion outwards exactly as the logo appears prominently
+    gsap.to(particles, {
+      explosionProgress: 1,
+      duration: 1.5,
+      delay: 3.5, // wait until Z forms, logo appears, then scatter!
+      ease: "power4.out"
     });
   }, [particles]);
 
@@ -95,9 +119,16 @@ const BootParticleNetwork = () => {
       if (Math.abs(p.z) > 10) p.vz *= -1;
 
       // Lerp between wander and Z-target based on progress
-      const currentX = THREE.MathUtils.lerp(p.x, p.targetX, p.progress);
-      const currentY = THREE.MathUtils.lerp(p.y, p.targetY, p.progress);
-      const currentZ = THREE.MathUtils.lerp(p.z, p.targetZ, p.progress);
+      let currentX = THREE.MathUtils.lerp(p.x, p.targetX, p.progress);
+      let currentY = THREE.MathUtils.lerp(p.y, p.targetY, p.progress);
+      let currentZ = THREE.MathUtils.lerp(p.z, p.targetZ, p.progress);
+
+      // Lerp to explosion target
+      if (p.explosionProgress > 0) {
+        currentX = THREE.MathUtils.lerp(currentX, p.explosionTargetX, p.explosionProgress);
+        currentY = THREE.MathUtils.lerp(currentY, p.explosionTargetY, p.explosionProgress);
+        currentZ = THREE.MathUtils.lerp(currentZ, p.explosionTargetZ, p.explosionProgress);
+      }
 
       positionArray[i * 3] = currentX;
       positionArray[i * 3 + 1] = currentY;
